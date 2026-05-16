@@ -83,8 +83,14 @@ export default function Dashboard() {
           <div className="flex gap-2">
             <button
               onClick={() => {
+                const stored = localStorage.getItem('provider');
+                const portalLink = stored ? JSON.parse(stored).portalLink : null;
+                if (!portalLink) {
+                  alert('No portal link found. Please log in again.');
+                  return;
+                }
                 navigator.clipboard.writeText(
-                  `${window.location.origin}/client-onboarding-portal/portal/demo-001`
+                  `${window.location.origin}/client-onboarding-portal/portal/${portalLink}`
                 );
                 alert('Portal link copied!');
               }}

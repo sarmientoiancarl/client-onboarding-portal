@@ -139,6 +139,10 @@ export default function ProviderLogin() {
             <Link to="/" style={{ color: '#FEFEFE66' }}>
               Go back home
             </Link>
+            {' · '}
+            <Link to="/register" style={{ color: '#FEFEFE66' }}>
+              Create account
+            </Link>
           </p>
         </div>
       </div>

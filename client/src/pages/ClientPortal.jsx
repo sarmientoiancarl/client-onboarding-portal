@@ -18,7 +18,7 @@ export default function ClientPortal() {
   useEffect(() => {
     const fetchTemplate = async () => {
       try {
-        const data = await getFormTemplate();
+        const data = await getFormTemplate(portalLink);
         setTemplate(data);
       } catch (err) {
         console.error('Failed to load form:', err);
