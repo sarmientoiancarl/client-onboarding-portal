@@ -18,7 +18,6 @@ export default function ProviderLogin() {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
       const res = await loginProvider(form.email, form.password);
       if (res.success) {
@@ -35,37 +34,47 @@ export default function ProviderLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
       <Navbar />
 
       <div className="flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
 
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Provider login
-            </h1>
-            <p className="text-sm text-gray-500">
-              Sign in to access your dashboard and manage your clients.
-            </p>
-          </div>
+          <h1
+            className="text-5xl mb-2"
+            style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
+          >
+            Welcome back
+          </h1>
+          <p className="text-sm mb-8" style={{ color: '#FEFEFE66' }}>
+            Sign in to access your dashboard and manage your clients.
+          </p>
 
           {/* Demo hint */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-6">
-            <p className="text-xs text-gray-500 font-medium mb-1">Demo credentials</p>
-            <p className="text-xs text-gray-600">
-              Email: <span className="font-mono text-gray-800">demo@provider.com</span>
+          <div
+            className="rounded-lg px-4 py-3 mb-6"
+            style={{ backgroundColor: '#6CE9FE11', border: '1px solid #6CE9FE33' }}
+          >
+            <p className="text-xs font-medium mb-1" style={{ color: '#6CE9FE' }}>
+              Demo credentials
             </p>
-            <p className="text-xs text-gray-600">
-              Password: <span className="font-mono text-gray-800">demo1234</span>
+            <p className="text-xs" style={{ color: '#FEFEFE66' }}>
+              Email:{' '}
+              <span className="font-mono" style={{ color: '#FEFEFE' }}>
+                demo@provider.com
+              </span>
+            </p>
+            <p className="text-xs" style={{ color: '#FEFEFE66' }}>
+              Password:{' '}
+              <span className="font-mono" style={{ color: '#FEFEFE' }}>
+                demo1234
+              </span>
             </p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium" style={{ color: '#FEFEFE99' }}>
                 Email address
               </label>
               <input
@@ -75,12 +84,17 @@ export default function ProviderLogin() {
                 onChange={handleChange}
                 placeholder="you@example.com"
                 required
-                className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                className="rounded-lg px-4 py-2.5 text-sm focus:outline-none transition"
+                style={{
+                  backgroundColor: '#FEFEFE08',
+                  border: '1px solid #FEFEFE22',
+                  color: '#FEFEFE',
+                }}
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium" style={{ color: '#FEFEFE99' }}>
                 Password
               </label>
               <input
@@ -90,34 +104,42 @@ export default function ProviderLogin() {
                 onChange={handleChange}
                 placeholder="Enter your password"
                 required
-                className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                className="rounded-lg px-4 py-2.5 text-sm focus:outline-none transition"
+                style={{
+                  backgroundColor: '#FEFEFE08',
+                  border: '1px solid #FEFEFE22',
+                  color: '#FEFEFE',
+                }}
               />
             </div>
 
-            {/* Error message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                <p className="text-xs text-red-600">{error}</p>
+              <div
+                className="rounded-lg px-4 py-3"
+                style={{ backgroundColor: '#FF000011', border: '1px solid #FF000033' }}
+              >
+                <p className="text-xs" style={{ color: '#FF6B6B' }}>
+                  {error}
+                </p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="bg-gray-900 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="px-6 py-3 rounded-lg text-sm font-medium transition mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#6CE9FE', color: '#0F0F0F' }}
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 
-          {/* Back to home */}
-          <p className="text-center text-xs text-gray-400 mt-6">
+          <p className="text-center text-xs mt-6" style={{ color: '#FEFEFE33' }}>
             Not a provider?{' '}
-            <Link to="/" className="text-gray-600 hover:text-gray-900 underline">
+            <Link to="/" style={{ color: '#FEFEFE66' }}>
               Go back home
             </Link>
           </p>
-
         </div>
       </div>
     </div>

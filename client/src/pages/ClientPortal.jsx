@@ -34,10 +34,7 @@ export default function ClientPortal() {
     setError('');
   };
 
-  const totalSteps = template
-    ? Math.ceil(template.fields.length / STEPS_PER_PAGE)
-    : 0;
-
+  const totalSteps = template ? Math.ceil(template.fields.length / STEPS_PER_PAGE) : 0;
   const currentFields = template
     ? template.fields.slice(step * STEPS_PER_PAGE, (step + 1) * STEPS_PER_PAGE)
     : [];
@@ -52,16 +49,8 @@ export default function ClientPortal() {
     return true;
   };
 
-  const handleNext = () => {
-    if (!validateStep()) return;
-    setStep((prev) => prev + 1);
-    setError('');
-  };
-
-  const handleBack = () => {
-    setStep((prev) => prev - 1);
-    setError('');
-  };
+  const handleNext = () => { if (!validateStep()) return; setStep((p) => p + 1); setError(''); };
+  const handleBack = () => { setStep((p) => p - 1); setError(''); };
 
   const handleSubmit = async () => {
     if (!validateStep()) return;
@@ -76,12 +65,23 @@ export default function ClientPortal() {
     }
   };
 
+  const inputStyle = {
+    backgroundColor: '#FEFEFE08',
+    border: '1px solid #FEFEFE22',
+    color: '#FEFEFE',
+    borderRadius: '8px',
+    padding: '10px 16px',
+    fontSize: '14px',
+    width: '100%',
+    outline: 'none',
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
         <Navbar />
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-gray-400">Loading your form...</p>
+          <p className="text-sm" style={{ color: '#FEFEFE33' }}>Loading your form...</p>
         </div>
       </div>
     );
@@ -89,42 +89,39 @@ export default function ClientPortal() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
         <Navbar />
         <div className="flex flex-1 items-center justify-center px-6">
           <div className="max-w-md w-full text-center flex flex-col items-center gap-4">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: '#6CE9FE22' }}
+            >
+              <svg className="w-8 h-8" fill="none" stroke="#6CE9FE" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h1
+              className="text-4xl"
+              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
+            >
               Brief submitted!
-            </h2>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Thank you for completing the intake form. Your provider will
-              review your brief and get back to you shortly.
+            </h1>
+            <p className="text-sm leading-relaxed" style={{ color: '#FEFEFE66' }}>
+              Thank you for completing the intake form. Your provider will review
+              your brief and get back to you shortly.
             </p>
-            <div className="bg-gray-50 border border-gray-200 rounded-xl px-6 py-4 w-full text-left mt-2">
-              <p className="text-xs font-medium text-gray-500 mb-3">
+            <div
+              className="rounded-xl px-6 py-4 w-full text-left mt-2"
+              style={{ border: '1px solid #FEFEFE11', backgroundColor: '#FEFEFE05' }}
+            >
+              <p className="text-xs font-medium mb-3" style={{ color: '#FEFEFE44' }}>
                 Your answers
               </p>
               {template.fields.map((field) => (
                 <div key={field.id} className="mb-3">
-                  <p className="text-xs text-gray-400">{field.label}</p>
-                  <p className="text-sm text-gray-800">
-                    {answers[field.id] || '—'}
-                  </p>
+                  <p className="text-xs mb-0.5" style={{ color: '#FEFEFE44' }}>{field.label}</p>
+                  <p className="text-sm" style={{ color: '#FEFEFE' }}>{answers[field.id] || '—'}</p>
                 </div>
               ))}
             </div>
@@ -135,33 +132,37 @@ export default function ClientPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
       <Navbar />
 
       <div className="flex flex-1 items-start justify-center px-6 py-12">
         <div className="w-full max-w-lg flex flex-col gap-8">
 
-          {/* Header */}
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            <h1
+              className="text-4xl mb-1"
+              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
+            >
               {template.title}
             </h1>
-            <p className="text-sm text-gray-500">
-              Please fill out the form below so your provider can prepare the
-              best brief for your project.
+            <p className="text-sm" style={{ color: '#FEFEFE66' }}>
+              Please fill out the form below so your provider can prepare the best brief for your project.
             </p>
           </div>
 
-          {/* Progress bar */}
+          {/* Progress */}
           <div className="flex flex-col gap-2">
-            <div className="flex justify-between text-xs text-gray-400">
+            <div className="flex justify-between text-xs" style={{ color: '#FEFEFE44' }}>
               <span>Step {step + 1} of {totalSteps}</span>
               <span>{Math.round(((step + 1) / totalSteps) * 100)}% complete</span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-1.5">
+            <div className="w-full rounded-full h-1" style={{ backgroundColor: '#FEFEFE11' }}>
               <div
-                className="bg-gray-900 h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
+                className="h-1 rounded-full transition-all duration-300"
+                style={{
+                  width: `${((step + 1) / totalSteps) * 100}%`,
+                  backgroundColor: '#6CE9FE',
+                }}
               />
             </div>
           </div>
@@ -170,30 +171,27 @@ export default function ClientPortal() {
           <div className="flex flex-col gap-5">
             {currentFields.map((field) => (
               <div key={field.id} className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium" style={{ color: '#FEFEFE99' }}>
                   {field.label}
-                  {field.required && (
-                    <span className="text-red-400 ml-1">*</span>
-                  )}
+                  {field.required && <span style={{ color: '#6CE9FE' }} className="ml-1">*</span>}
                 </label>
-
                 {field.type === 'textarea' ? (
                   <textarea
                     rows={4}
                     placeholder={field.placeholder}
                     value={answers[field.id] || ''}
                     onChange={(e) => handleChange(field.id, e.target.value)}
-                    className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition resize-none"
+                    style={{ ...inputStyle, resize: 'none' }}
                   />
                 ) : field.type === 'select' ? (
                   <select
                     value={answers[field.id] || ''}
                     onChange={(e) => handleChange(field.id, e.target.value)}
-                    className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    style={{ ...inputStyle, backgroundColor: '#0F0F0F' }}
                   >
                     <option value="">Select an option</option>
                     {field.options.map((opt) => (
-                      <option key={opt} value={opt}>
+                      <option key={opt} value={opt} style={{ backgroundColor: '#0F0F0F' }}>
                         {opt}
                       </option>
                     ))}
@@ -204,7 +202,7 @@ export default function ClientPortal() {
                     placeholder={field.placeholder}
                     value={answers[field.id] || ''}
                     onChange={(e) => handleChange(field.id, e.target.value)}
-                    className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    style={inputStyle}
                   />
                 )}
               </div>
@@ -213,8 +211,11 @@ export default function ClientPortal() {
 
           {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-              <p className="text-xs text-red-600">{error}</p>
+            <div
+              className="rounded-lg px-4 py-3"
+              style={{ backgroundColor: '#FF000011', border: '1px solid #FF000033' }}
+            >
+              <p className="text-xs" style={{ color: '#FF6B6B' }}>{error}</p>
             </div>
           )}
 
@@ -223,18 +224,18 @@ export default function ClientPortal() {
             {step > 0 ? (
               <button
                 onClick={handleBack}
-                className="border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition"
+                className="px-5 py-2.5 rounded-lg text-sm transition"
+                style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
               >
                 Back
               </button>
-            ) : (
-              <div />
-            )}
+            ) : <div />}
 
             {step < totalSteps - 1 ? (
               <button
                 onClick={handleNext}
-                className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm hover:bg-gray-700 transition"
+                className="px-5 py-2.5 rounded-lg text-sm font-medium transition"
+                style={{ backgroundColor: '#6CE9FE', color: '#0F0F0F' }}
               >
                 Next
               </button>
@@ -242,7 +243,8 @@ export default function ClientPortal() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50"
+                style={{ backgroundColor: '#6CE9FE', color: '#0F0F0F' }}
               >
                 {submitting ? 'Submitting...' : 'Submit brief'}
               </button>

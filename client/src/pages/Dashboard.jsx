@@ -14,10 +14,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const stored = localStorage.getItem('provider');
-    if (!stored) {
-      navigate('/login');
-      return;
-    }
+    if (!stored) { navigate('/login'); return; }
     setProvider(JSON.parse(stored));
 
     const fetchClients = async () => {
@@ -30,7 +27,6 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-
     fetchClients();
   }, [navigate]);
 
@@ -50,25 +46,23 @@ export default function Dashboard() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('en-PH', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+      year: 'numeric', month: 'short', day: 'numeric',
     });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
         <Navbar isProvider />
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-gray-400">Loading clients...</p>
+          <p className="text-sm" style={{ color: '#FEFEFE33' }}>Loading clients...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
       <Navbar isProvider />
 
       <div className="max-w-5xl mx-auto w-full px-6 py-10 flex flex-col gap-8">
@@ -76,8 +70,13 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1
+              className="text-5xl"
+              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
+            >
+              Dashboard
+            </h1>
+            <p className="text-sm mt-1" style={{ color: '#FEFEFE66' }}>
               Welcome back, {provider?.name}
             </p>
           </div>
@@ -87,15 +86,17 @@ export default function Dashboard() {
                 navigator.clipboard.writeText(
                   `${window.location.origin}/client-onboarding-portal/portal/demo-001`
                 );
-                alert('Portal link copied to clipboard!');
+                alert('Portal link copied!');
               }}
-              className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition"
+              className="px-4 py-2 rounded-lg text-sm transition"
+              style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
             >
               Copy portal link
             </button>
             <Link
               to="/form-builder"
-              className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition"
+              style={{ backgroundColor: '#6CE9FE', color: '#0F0F0F' }}
             >
               Edit form
             </Link>
@@ -111,10 +112,14 @@ export default function Dashboard() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-gray-50 rounded-xl px-6 py-5 flex flex-col gap-1"
+              className="rounded-xl px-6 py-5 flex flex-col gap-1"
+              style={{ backgroundColor: '#FEFEFE08', border: '1px solid #FEFEFE11' }}
             >
-              <span className="text-xs text-gray-500">{stat.label}</span>
-              <span className="text-2xl font-bold text-gray-900">
+              <span className="text-xs" style={{ color: '#FEFEFE44' }}>{stat.label}</span>
+              <span
+                className="text-3xl"
+                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#6CE9FE' }}
+              >
                 {stat.value}
               </span>
             </div>
@@ -128,16 +133,26 @@ export default function Dashboard() {
             placeholder="Search by name, business, or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+            className="flex-1 rounded-lg px-4 py-2.5 text-sm focus:outline-none transition"
+            style={{
+              backgroundColor: '#FEFEFE08',
+              border: '1px solid #FEFEFE22',
+              color: '#FEFEFE',
+            }}
           />
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+            className="rounded-lg px-4 py-2.5 text-sm focus:outline-none transition"
+            style={{
+              backgroundColor: '#FEFEFE08',
+              border: '1px solid #FEFEFE22',
+              color: '#FEFEFE',
+            }}
           >
-            <option value="all">All statuses</option>
-            <option value="completed">Completed</option>
-            <option value="pending">Pending</option>
+            <option value="all" style={{ backgroundColor: '#0F0F0F' }}>All statuses</option>
+            <option value="completed" style={{ backgroundColor: '#0F0F0F' }}>Completed</option>
+            <option value="pending" style={{ backgroundColor: '#0F0F0F' }}>Pending</option>
           </select>
         </div>
 
@@ -145,30 +160,31 @@ export default function Dashboard() {
         <div className="flex flex-col gap-3">
           {filtered.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-sm text-gray-400">No clients found.</p>
+              <p className="text-sm" style={{ color: '#FEFEFE33' }}>No clients found.</p>
             </div>
           ) : (
             filtered.map((client) => (
               <Link
                 to={`/client/${client.id}`}
                 key={client.id}
-                className="border border-gray-200 rounded-xl px-6 py-5 hover:border-gray-300 hover:bg-gray-50 transition flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                className="rounded-xl px-6 py-5 transition flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                style={{ border: '1px solid #FEFEFE11', backgroundColor: '#FEFEFE05' }}
               >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold" style={{ color: '#FEFEFE' }}>
                       {client.name}
                     </span>
                     <StatusBadge status={client.status} />
                   </div>
-                  <span className="text-sm text-gray-500">{client.business}</span>
-                  <span className="text-xs text-gray-400">{client.email}</span>
+                  <span className="text-sm" style={{ color: '#FEFEFE66' }}>{client.business}</span>
+                  <span className="text-xs" style={{ color: '#FEFEFE44' }}>{client.email}</span>
                 </div>
                 <div className="flex flex-col sm:items-end gap-1">
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs" style={{ color: '#FEFEFE44' }}>
                     {client.status === 'completed' ? 'Submitted' : 'Not yet submitted'}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs" style={{ color: '#FEFEFE66' }}>
                     {formatDate(client.submittedAt)}
                   </span>
                 </div>

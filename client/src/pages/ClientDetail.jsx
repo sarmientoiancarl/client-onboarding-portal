@@ -14,10 +14,7 @@ export default function ClientDetail() {
 
   useEffect(() => {
     const stored = localStorage.getItem('provider');
-    if (!stored) {
-      navigate('/login');
-      return;
-    }
+    if (!stored) { navigate('/login'); return; }
 
     const fetchData = async () => {
       try {
@@ -27,10 +24,7 @@ export default function ClientDetail() {
           getFormTemplate(),
         ]);
         const found = clients.find((c) => c.id === clientId);
-        if (!found) {
-          navigate('/dashboard');
-          return;
-        }
+        if (!found) { navigate('/dashboard'); return; }
         setClient(found);
         setSubmission(sub);
         setTemplate(tmpl);
@@ -40,46 +34,38 @@ export default function ClientDetail() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [clientId, navigate]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('en-PH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
     });
-  };
-
-  const handlePrint = () => {
-    window.print();
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
         <Navbar isProvider />
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-gray-400">Loading client details...</p>
+          <p className="text-sm" style={{ color: '#FEFEFE33' }}>Loading client details...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
       <Navbar isProvider />
 
       <div className="max-w-3xl mx-auto w-full px-6 py-10 flex flex-col gap-8">
 
-        {/* Back */}
         <Link
           to="/dashboard"
-          className="text-sm text-gray-500 hover:text-gray-900 transition flex items-center gap-1"
+          className="text-sm transition"
+          style={{ color: '#FEFEFE44' }}
         >
           ← Back to dashboard
         </Link>
@@ -88,52 +74,71 @@ export default function ClientDetail() {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">{client.name}</h1>
+              <h1
+                className="text-4xl"
+                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
+              >
+                {client.name}
+              </h1>
               <StatusBadge status={client.status} />
             </div>
-            <p className="text-sm text-gray-500">{client.business}</p>
-            <p className="text-sm text-gray-400">{client.email}</p>
+            <p className="text-sm" style={{ color: '#FEFEFE66' }}>{client.business}</p>
+            <p className="text-xs" style={{ color: '#FEFEFE44' }}>{client.email}</p>
           </div>
           <button
-            onClick={handlePrint}
-            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition self-start"
+            onClick={() => window.print()}
+            className="px-4 py-2 rounded-lg text-sm transition self-start"
+            style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
           >
             Export PDF
           </button>
         </div>
 
         {/* Submission info */}
-        <div className="bg-gray-50 rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div
+          className="rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+          style={{ backgroundColor: '#FEFEFE08', border: '1px solid #FEFEFE11' }}
+        >
           <div>
-            <p className="text-xs text-gray-400">Submitted on</p>
-            <p className="text-sm font-medium text-gray-800">
+            <p className="text-xs mb-1" style={{ color: '#FEFEFE44' }}>Submitted on</p>
+            <p className="text-sm font-medium" style={{ color: '#FEFEFE' }}>
               {formatDate(client.submittedAt)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-400">Portal link</p>
-            <p className="text-sm font-mono text-gray-600">{client.portalLink}</p>
+            <p className="text-xs mb-1" style={{ color: '#FEFEFE44' }}>Portal link</p>
+            <p className="text-sm font-mono" style={{ color: '#6CE9FE' }}>{client.portalLink}</p>
           </div>
         </div>
 
         {/* Brief answers */}
         {submission && template ? (
-          <div className="flex flex-col gap-1">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">
+          <div>
+            <h2
+              className="text-base font-medium mb-4"
+              style={{ color: '#FEFEFE' }}
+            >
               Project brief
             </h2>
-            <div className="flex flex-col divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
-              {template.fields.map((field) => (
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{ border: '1px solid #FEFEFE11' }}
+            >
+              {template.fields.map((field, idx) => (
                 <div
                   key={field.id}
                   className="flex flex-col sm:flex-row px-6 py-4 gap-1 sm:gap-8"
+                  style={{
+                    borderTop: idx === 0 ? 'none' : '1px solid #FEFEFE08',
+                    backgroundColor: idx % 2 === 0 ? '#FEFEFE05' : 'transparent',
+                  }}
                 >
-                  <p className="text-xs font-medium text-gray-400 sm:w-40 shrink-0 pt-0.5">
+                  <p className="text-xs font-medium sm:w-40 shrink-0 pt-0.5" style={{ color: '#FEFEFE44' }}>
                     {field.label}
                   </p>
-                  <p className="text-sm text-gray-800 flex-1">
+                  <p className="text-sm flex-1" style={{ color: '#FEFEFE' }}>
                     {submission.answers[field.id] || (
-                      <span className="text-gray-400 italic">No answer provided</span>
+                      <span style={{ color: '#FEFEFE33', fontStyle: 'italic' }}>No answer provided</span>
                     )}
                   </p>
                 </div>
@@ -141,8 +146,11 @@ export default function ClientDetail() {
             </div>
           </div>
         ) : (
-          <div className="border border-gray-200 rounded-xl px-6 py-12 text-center">
-            <p className="text-sm text-gray-400">
+          <div
+            className="rounded-xl px-6 py-12 text-center"
+            style={{ border: '1px solid #FEFEFE11' }}
+          >
+            <p className="text-sm mb-4" style={{ color: '#FEFEFE44' }}>
               This client has not submitted their brief yet.
             </p>
             <button
@@ -152,7 +160,8 @@ export default function ClientDetail() {
                 );
                 alert('Portal link copied! Send this to your client.');
               }}
-              className="mt-4 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition"
+              className="px-4 py-2 rounded-lg text-sm transition"
+              style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
             >
               Copy portal link
             </button>

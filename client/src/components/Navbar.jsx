@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 
-export default function Navbar({ isProvider }) {
+export default function Navbar({ isProvider, light }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -8,20 +8,37 @@ export default function Navbar({ isProvider }) {
     navigate('/');
   };
 
+  const bg = light ? '#FEFEFE' : '#0F0F0F';
+  const border = light ? '1px solid #0F0F0F11' : '1px solid #FEFEFE11';
+  const textPrimary = light ? '#0F0F0F' : '#FEFEFE';
+  const textMuted = light ? '#0F0F0F66' : '#FEFEFE66';
+
   return (
-    <nav className="w-full border-b border-gray-200 bg-white px-6 py-4 flex items-center justify-between">
-      <Link to="/" className="text-lg font-semibold text-gray-900 tracking-tight">
+    <nav
+      className="w-full px-6 py-4 flex items-center justify-between"
+      style={{ backgroundColor: bg, borderBottom: border }}
+    >
+      <Link
+        to="/"
+        className="text-base font-medium tracking-tight"
+        style={{ fontFamily: 'Cormorant, serif', fontSize: '1.25rem', color: textPrimary }}
+      >
         OnboardKit
       </Link>
       <div className="flex items-center gap-4">
         {isProvider ? (
           <>
-            <Link to="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link
+              to="/dashboard"
+              className="text-sm transition"
+              style={{ color: textMuted }}
+            >
               Dashboard
             </Link>
             <button
               onClick={handleLogout}
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm transition"
+              style={{ color: textMuted }}
             >
               Log out
             </button>
@@ -29,7 +46,8 @@ export default function Navbar({ isProvider }) {
         ) : (
           <Link
             to="/login"
-            className="text-sm bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+            className="text-sm px-4 py-2 rounded-lg font-medium transition"
+            style={{ backgroundColor: '#6CE9FE', color: '#0F0F0F' }}
           >
             Provider login
           </Link>
