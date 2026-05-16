@@ -1,0 +1,60 @@
+{
+  "id": "template-001",
+  "title": "Client Intake Form",
+  "fields": [
+    {
+      "id": "field-001",
+      "type": "text",
+      "label": "Full Name",
+      "placeholder": "Enter your full name",
+      "required": true
+    },
+    {
+      "id": "field-002",
+      "type": "text",
+      "label": "Business Name",
+      "placeholder": "Enter your business name",
+      "required": true
+    },
+    {
+      "id": "field-003",
+      "type": "email",
+      "label": "Email Address",
+      "placeholder": "Enter your email",
+      "required": true
+    },
+    {
+      "id": "field-004",
+      "type": "textarea",
+      "label": "Project Goals",
+      "placeholder": "Describe what you want to achieve with this project",
+      "required": true
+    },
+    {
+      "id": "field-005",
+      "type": "textarea",
+      "label": "Target Audience",
+      "placeholder": "Who are your target customers?",
+      "required": false
+    },
+    {
+      "id": "field-006",
+      "type": "select",
+      "label": "Project Budget",
+      "required": true,
+      "options": [
+        "Below ₱10,000",
+        "₱10,000 - ₱25,000",
+        "₱25,000 - ₱50,000",
+        "Above ₱50,000"
+      ]
+    },
+    {
+      "id": "field-007",
+      "type": "text",
+      "label": "Preferred Timeline",
+      "placeholder": "e.g. 2 weeks, 1 month",
+      "required": false
+    }
+  ]
+}

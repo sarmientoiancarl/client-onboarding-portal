@@ -1,0 +1,30 @@
+[
+  {
+    "id": "sub-001",
+    "clientId": "client-001",
+    "submittedAt": "2025-05-10T09:30:00Z",
+    "answers": {
+      "field-001": "Maria Santos",
+      "field-002": "Santos Graphic Design Studio",
+      "field-003": "maria@santosstudio.com",
+      "field-004": "I need a new website that showcases my design portfolio and allows clients to book consultations online.",
+      "field-005": "Small business owners and startups looking for branding and design services.",
+      "field-006": "₱25,000 - ₱50,000",
+      "field-007": "1 month"
+    }
+  },
+  {
+    "id": "sub-003",
+    "clientId": "client-003",
+    "submittedAt": "2025-05-12T14:20:00Z",
+    "answers": {
+      "field-001": "Anna Lim",
+      "field-002": "Lim Photography",
+      "field-003": "anna@limphotography.com",
+      "field-004": "I want a photography portfolio site with an online booking system for photo shoots.",
+      "field-005": "Couples, families, and corporate clients looking for professional photography.",
+      "field-006": "₱10,000 - ₱25,000",
+      "field-007": "2 weeks"
+    }
+  }
+]
