@@ -21,7 +21,7 @@ export default function ProviderLogin() {
     try {
       const res = await loginProvider(form.email, form.password);
       if (res.success) {
-        localStorage.setItem('provider', JSON.stringify({ name: res.name, token: res.token }));
+        localStorage.setItem('provider', JSON.stringify({ name: res.name, token: res.token, portalLink: res.portalLink }));
         navigate('/dashboard');
       } else {
         setError(res.message || 'Invalid credentials. Please try again.');
