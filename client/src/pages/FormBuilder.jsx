@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { getFormTemplate, saveFormTemplate } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
+import { t } from '../utils/theme';
 
 const FIELD_TYPES = [
   { value: 'text', label: 'Short text' },
@@ -12,18 +14,12 @@ const FIELD_TYPES = [
 ];
 
 const generateId = () => `field-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-
-const emptyField = () => ({
-  id: generateId(),
-  type: 'text',
-  label: '',
-  placeholder: '',
-  required: false,
-  options: [],
-});
+const emptyField = () => ({ id: generateId(), type: 'text', label: '', placeholder: '', required: false, options: [] });
 
 export default function FormBuilder() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const c = t(theme);
   const [title, setTitle] = useState('Client Intake Form');
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,9 +58,7 @@ export default function FormBuilder() {
   };
 
   const updateField = (id, key, value) => {
-    setFields((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, [key]: value } : f))
-    );
+    setFields((prev) => prev.map((f) => (f.id === id ? { ...f, [key]: value } : f)));
   };
 
   const moveField = (index, direction) => {
@@ -88,9 +82,7 @@ export default function FormBuilder() {
 
   const addOption = (fieldId) => {
     setFields((prev) =>
-      prev.map((f) =>
-        f.id === fieldId ? { ...f, options: [...f.options, ''] } : f
-      )
+      prev.map((f) => f.id === fieldId ? { ...f, options: [...f.options, ''] } : f)
     );
   };
 
@@ -98,25 +90,18 @@ export default function FormBuilder() {
     setFields((prev) =>
       prev.map((f) => {
         if (f.id !== fieldId) return f;
-        const newOptions = f.options.filter((_, i) => i !== optIndex);
-        return { ...f, options: newOptions };
+        return { ...f, options: f.options.filter((_, i) => i !== optIndex) };
       })
     );
   };
 
   const handleSave = async () => {
-    // Validate
     for (const field of fields) {
-      if (!field.label.trim()) {
-        setError('All fields must have a label.');
-        return;
-      }
+      if (!field.label.trim()) { setError('All fields must have a label.'); return; }
       if (field.type === 'select' && field.options.length === 0) {
-        setError(`Dropdown field "${field.label}" must have at least one option.`);
-        return;
+        setError(`Dropdown field "${field.label}" must have at least one option.`); return;
       }
     }
-
     setSaving(true);
     setError('');
     try {
@@ -131,9 +116,9 @@ export default function FormBuilder() {
   };
 
   const inputStyle = {
-    backgroundColor: '#FEFEFE08',
-    border: '1px solid #FEFEFE22',
-    color: '#FEFEFE',
+    backgroundColor: c.bgInput,
+    border: `1px solid ${c.borderMid}`,
+    color: c.textPrimary,
     borderRadius: '8px',
     padding: '8px 12px',
     fontSize: '13px',
@@ -143,17 +128,17 @@ export default function FormBuilder() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
         <Navbar isProvider />
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm" style={{ color: '#FEFEFE33' }}>Loading form...</p>
+          <p className="text-sm" style={{ color: c.textMuted }}>Loading form...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
       <Navbar isProvider />
 
       <div className="max-w-3xl mx-auto w-full px-6 py-10 flex flex-col gap-8">
@@ -164,17 +149,17 @@ export default function FormBuilder() {
             <Link
               to="/dashboard"
               className="text-sm transition mb-2 inline-block"
-              style={{ color: '#FEFEFE44' }}
+              style={{ color: c.textMuted }}
             >
-              ← Back to dashboard
+              Back to dashboard
             </Link>
             <h1
               className="text-5xl"
-              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
+              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
             >
               Form Builder
             </h1>
-            <p className="text-sm mt-1" style={{ color: '#FEFEFE66' }}>
+            <p className="text-sm mt-1" style={{ color: c.textSecondary }}>
               Customize the intake form your clients will fill out.
             </p>
           </div>
@@ -182,15 +167,18 @@ export default function FormBuilder() {
             onClick={handleSave}
             disabled={saving}
             className="px-5 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50 self-start sm:self-auto"
-            style={{ backgroundColor: saved ? '#1D9E75' : '#6CE9FE', color: '#0F0F0F' }}
+            style={{
+              backgroundColor: saved ? '#1D9E75' : c.accent,
+              color: '#FEFEFE',
+            }}
           >
-            {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save form'}
+            {saving ? 'Saving...' : saved ? 'Saved' : 'Save form'}
           </button>
         </div>
 
         {/* Form title */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium" style={{ color: '#FEFEFE99' }}>
+          <label className="text-sm font-medium" style={{ color: c.textSecondary }}>
             Form title
           </label>
           <input
@@ -205,12 +193,9 @@ export default function FormBuilder() {
         {/* Fields list */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium" style={{ color: '#FEFEFE99' }}>
+            <p className="text-sm font-medium" style={{ color: c.textSecondary }}>
               Fields{' '}
-              <span
-                className="text-xs font-normal ml-1"
-                style={{ color: '#FEFEFE33' }}
-              >
+              <span className="text-xs font-normal ml-1" style={{ color: c.textFaint }}>
                 {fields.length} total
               </span>
             </p>
@@ -219,9 +204,9 @@ export default function FormBuilder() {
           {fields.length === 0 && (
             <div
               className="rounded-xl px-6 py-12 text-center"
-              style={{ border: '1px dashed #FEFEFE22' }}
+              style={{ border: `1px dashed ${c.borderMid}` }}
             >
-              <p className="text-sm" style={{ color: '#FEFEFE33' }}>
+              <p className="text-sm" style={{ color: c.textMuted }}>
                 No fields yet. Add your first field below.
               </p>
             </div>
@@ -231,53 +216,48 @@ export default function FormBuilder() {
             <div
               key={field.id}
               className="rounded-xl overflow-hidden"
-              style={{ border: '1px solid #FEFEFE11', backgroundColor: '#FEFEFE05' }}
+              style={{ border: `1px solid ${c.border}`, backgroundColor: c.bgCard }}
             >
               {/* Field header */}
               <div
                 className="flex items-center justify-between px-5 py-4 cursor-pointer"
-                onClick={() =>
-                  setExpandedField(expandedField === field.id ? null : field.id)
-                }
+                onClick={() => setExpandedField(expandedField === field.id ? null : field.id)}
               >
                 <div className="flex items-center gap-3">
                   <span
                     className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: '#6CE9FE22', color: '#6CE9FE', border: '1px solid #6CE9FE33' }}
+                    style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}
                   >
                     {FIELD_TYPES.find((t) => t.value === field.type)?.label || field.type}
                   </span>
-                  <span className="text-sm" style={{ color: field.label ? '#FEFEFE' : '#FEFEFE33' }}>
+                  <span className="text-sm" style={{ color: field.label ? c.textPrimary : c.textMuted }}>
                     {field.label || 'Untitled field'}
                   </span>
                   {field.required && (
-                    <span className="text-xs" style={{ color: '#6CE9FE' }}>*</span>
+                    <span className="text-xs" style={{ color: c.accentText }}>*</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={(e) => { e.stopPropagation(); moveField(index, -1); }}
                     className="text-xs px-2 py-1 rounded transition"
-                    style={{ color: '#FEFEFE33' }}
-                    title="Move up"
+                    style={{ color: c.textMuted }}
                   >
-                    ↑
+                    up
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); moveField(index, 1); }}
                     className="text-xs px-2 py-1 rounded transition"
-                    style={{ color: '#FEFEFE33' }}
-                    title="Move down"
+                    style={{ color: c.textMuted }}
                   >
-                    ↓
+                    dn
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); removeField(field.id); }}
                     className="text-xs px-2 py-1 rounded transition"
-                    style={{ color: '#FF6B6B66' }}
-                    title="Remove field"
+                    style={{ color: c.deleteText }}
                   >
-                    ✕
+                    remove
                   </button>
                 </div>
               </div>
@@ -286,15 +266,12 @@ export default function FormBuilder() {
               {expandedField === field.id && (
                 <div
                   className="px-5 pb-5 flex flex-col gap-4"
-                  style={{ borderTop: '1px solid #FEFEFE08' }}
+                  style={{ borderTop: `1px solid ${c.border}` }}
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
 
-                    {/* Label */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium" style={{ color: '#FEFEFE66' }}>
-                        Label
-                      </label>
+                      <label className="text-xs font-medium" style={{ color: c.textSecondary }}>Label</label>
                       <input
                         type="text"
                         value={field.label}
@@ -304,30 +281,22 @@ export default function FormBuilder() {
                       />
                     </div>
 
-                    {/* Type */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium" style={{ color: '#FEFEFE66' }}>
-                        Field type
-                      </label>
+                      <label className="text-xs font-medium" style={{ color: c.textSecondary }}>Field type</label>
                       <select
                         value={field.type}
                         onChange={(e) => updateField(field.id, 'type', e.target.value)}
-                        style={{ ...inputStyle, backgroundColor: '#0F0F0F' }}
+                        style={{ ...inputStyle, backgroundColor: c.bgCard }}
                       >
-                        {FIELD_TYPES.map((t) => (
-                          <option key={t.value} value={t.value} style={{ backgroundColor: '#0F0F0F' }}>
-                            {t.label}
-                          </option>
+                        {FIELD_TYPES.map((ft) => (
+                          <option key={ft.value} value={ft.value}>{ft.label}</option>
                         ))}
                       </select>
                     </div>
 
-                    {/* Placeholder */}
-                    {field.type !== 'select' && (
+                    {field.type !== 'select' && field.type !== 'file' && (
                       <div className="flex flex-col gap-1.5 sm:col-span-2">
-                        <label className="text-xs font-medium" style={{ color: '#FEFEFE66' }}>
-                          Placeholder text
-                        </label>
+                        <label className="text-xs font-medium" style={{ color: c.textSecondary }}>Placeholder text</label>
                         <input
                           type="text"
                           value={field.placeholder}
@@ -338,35 +307,27 @@ export default function FormBuilder() {
                       </div>
                     )}
 
-                    {/* Required toggle */}
                     <div className="flex items-center gap-3 sm:col-span-2">
                       <button
                         onClick={() => updateField(field.id, 'required', !field.required)}
                         className="w-10 h-5 rounded-full transition-all relative"
-                        style={{
-                          backgroundColor: field.required ? '#6CE9FE' : '#FEFEFE22',
-                        }}
+                        style={{ backgroundColor: field.required ? c.accent : c.bgCardAlt }}
                       >
                         <span
                           className="absolute top-0.5 w-4 h-4 rounded-full transition-all"
                           style={{
-                            backgroundColor: '#0F0F0F',
+                            backgroundColor: theme === 'light' ? '#FEFEFE' : '#0F0F0F',
                             left: field.required ? '22px' : '2px',
                           }}
                         />
                       </button>
-                      <span className="text-xs" style={{ color: '#FEFEFE66' }}>
-                        Required field
-                      </span>
+                      <span className="text-xs" style={{ color: c.textSecondary }}>Required field</span>
                     </div>
                   </div>
 
-                  {/* Dropdown options */}
                   {field.type === 'select' && (
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs font-medium" style={{ color: '#FEFEFE66' }}>
-                        Options
-                      </label>
+                      <label className="text-xs font-medium" style={{ color: c.textSecondary }}>Options</label>
                       {field.options.map((opt, optIndex) => (
                         <div key={optIndex} className="flex items-center gap-2">
                           <input
@@ -379,16 +340,16 @@ export default function FormBuilder() {
                           <button
                             onClick={() => removeOption(field.id, optIndex)}
                             className="text-xs px-2 py-1 rounded"
-                            style={{ color: '#FF6B6B66' }}
+                            style={{ color: c.deleteText }}
                           >
-                            ✕
+                            remove
                           </button>
                         </div>
                       ))}
                       <button
                         onClick={() => addOption(field.id)}
                         className="text-xs px-3 py-1.5 rounded-lg self-start transition"
-                        style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
+                        style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
                       >
                         + Add option
                       </button>
@@ -399,40 +360,37 @@ export default function FormBuilder() {
             </div>
           ))}
 
-          {/* Add field button */}
           <button
             onClick={addField}
             className="rounded-xl px-6 py-4 text-sm transition text-center"
-            style={{ border: '1px dashed #FEFEFE22', color: '#FEFEFE44' }}
+            style={{ border: `1px dashed ${c.borderMid}`, color: c.textMuted }}
           >
             + Add field
           </button>
         </div>
 
-        {/* Error */}
         {error && (
           <div
             className="rounded-lg px-4 py-3"
-            style={{ backgroundColor: '#FF000011', border: '1px solid #FF000033' }}
+            style={{ backgroundColor: c.errorBg, border: `1px solid ${c.errorBorder}` }}
           >
-            <p className="text-xs" style={{ color: '#FF6B6B' }}>{error}</p>
+            <p className="text-xs" style={{ color: c.errorText }}>{error}</p>
           </div>
         )}
 
-        {/* Preview note */}
         <div
           className="rounded-xl px-6 py-4 flex items-center justify-between"
-          style={{ backgroundColor: '#6CE9FE11', border: '1px solid #6CE9FE22' }}
+          style={{ backgroundColor: c.accentBg, border: `1px solid ${c.accentBorder}` }}
         >
-          <p className="text-xs" style={{ color: '#6CE9FE99' }}>
+          <p className="text-xs" style={{ color: c.accentText }}>
             Want to see how your form looks to clients?
           </p>
           <Link
             to="/portal/demo-001"
             className="text-xs font-medium transition"
-            style={{ color: '#6CE9FE' }}
+            style={{ color: c.accentText }}
           >
-            Preview form →
+            Preview form
           </Link>
         </div>
 

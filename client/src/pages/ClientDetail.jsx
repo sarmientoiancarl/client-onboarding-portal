@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
-import { exportClientPDF } from '../utils/exportPdf';
-import { getClients, getSubmissionByClientId, getFormTemplate } from '../services/api';
 import ClientModal from '../components/ClientModal';
-import { updateClient, deleteClient } from '../services/api';
+import { exportClientPDF } from '../utils/exportPdf';
+import { getClients, getSubmissionByClientId, getFormTemplate, updateClient, deleteClient } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
+import { t } from '../utils/theme';
 
 export default function ClientDetail() {
   const { clientId } = useParams();
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const c = t(theme);
   const [client, setClient] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [template, setTemplate] = useState(null);
@@ -70,130 +73,76 @@ export default function ClientDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
         <Navbar isProvider />
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm" style={{ color: '#FEFEFE33' }}>Loading client details...</p>
+          <p className="text-sm" style={{ color: c.textMuted }}>Loading client details...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
       <Navbar isProvider />
+
+      {/* Edit Modal */}
+      {modal && (
+        <ClientModal
+          mode="edit"
+          client={client}
+          onClose={() => setModal(false)}
+          onSave={handleUpdate}
+        />
+      )}
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ backgroundColor: '#0F0F0Fee' }}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4"
+            style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
+          >
+            <h2
+              className="text-2xl"
+              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
+            >
+              Delete client?
+            </h2>
+            <p className="text-sm" style={{ color: c.textSecondary }}>
+              Are you sure you want to delete{' '}
+              <span style={{ color: c.textPrimary }}>{client.name}</span>?
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="px-4 py-2 rounded-lg text-sm transition"
+                style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+                style={{ backgroundColor: c.deleteBg, color: c.deleteText, border: `1px solid ${c.deleteBorder}` }}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-3xl mx-auto w-full px-6 py-10 flex flex-col gap-8">
 
-        <Link
-          to="/dashboard"
-          className="text-sm transition"
-          style={{ color: '#FEFEFE44' }}
-        >
+        <Link to="/dashboard" className="text-sm transition" style={{ color: c.textMuted }}>
           Back to dashboard
         </Link>
-
-        {/* Modals */}
-        {modal && (
-          <ClientModal
-            mode="edit"
-            client={client}
-            onClose={() => setModal(false)}
-            onSave={handleUpdate}
-          />
-        )}
-
-        {confirmDelete && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center px-4"
-            style={{ backgroundColor: '#0F0F0Fee' }}
-          >
-            <div
-              className="w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4"
-              style={{ backgroundColor: '#161616', border: '1px solid #FEFEFE11' }}
-            >
-              <h2
-                className="text-2xl"
-                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
-              >
-                Delete client?
-              </h2>
-              <p className="text-sm" style={{ color: '#FEFEFE66' }}>
-                Are you sure you want to delete{' '}
-                <span style={{ color: '#FEFEFE' }}>{client.name}</span>?
-                This action cannot be undone.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setConfirmDelete(false)}
-                  className="px-4 py-2 rounded-lg text-sm transition"
-                  style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
-                  style={{ backgroundColor: '#FF6B6B22', color: '#FF6B6B', border: '1px solid #FF6B6B44' }}
-                >
-                  {deleting ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modals */}
-        {modal && (
-          <ClientModal
-            mode="edit"
-            client={client}
-            onClose={() => setModal(false)}
-            onSave={handleUpdate}
-          />
-        )}
-
-        {confirmDelete && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center px-4"
-            style={{ backgroundColor: '#0F0F0Fee' }}
-          >
-            <div
-              className="w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4"
-              style={{ backgroundColor: '#161616', border: '1px solid #FEFEFE11' }}
-            >
-              <h2
-                className="text-2xl"
-                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
-              >
-                Delete client?
-              </h2>
-              <p className="text-sm" style={{ color: '#FEFEFE66' }}>
-                Are you sure you want to delete{' '}
-                <span style={{ color: '#FEFEFE' }}>{client.name}</span>?
-                This action cannot be undone.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setConfirmDelete(false)}
-                  className="px-4 py-2 rounded-lg text-sm transition"
-                  style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
-                  style={{ backgroundColor: '#FF6B6B22', color: '#FF6B6B', border: '1px solid #FF6B6B44' }}
-                >
-                  {deleting ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Client header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -201,64 +150,66 @@ export default function ClientDetail() {
             <div className="flex items-center gap-3">
               <h1
                 className="text-4xl"
-                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
+                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
               >
                 {client.name}
               </h1>
               <StatusBadge status={client.status} />
             </div>
-            <p className="text-sm" style={{ color: '#FEFEFE66' }}>{client.business}</p>
-            <p className="text-xs" style={{ color: '#FEFEFE44' }}>{client.email}</p>
+            <p className="text-sm" style={{ color: c.textSecondary }}>{client.business}</p>
+            <p className="text-xs" style={{ color: c.textMuted }}>{client.email}</p>
           </div>
           <div className="flex gap-2 self-start">
             <button
               onClick={() => setModal(true)}
               className="px-4 py-2 rounded-lg text-sm transition"
-              style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
+              style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
             >
               Edit
             </button>
             <button
               onClick={() => setConfirmDelete(true)}
               className="px-4 py-2 rounded-lg text-sm transition"
-              style={{ border: '1px solid #FF6B6B33', color: '#FF6B6B66' }}
+              style={{ border: `1px solid ${c.deleteBorder}`, color: c.deleteText }}
             >
               Delete
             </button>
             <button
               onClick={() => exportClientPDF(client, template, submission)}
               className="px-4 py-2 rounded-lg text-sm font-medium transition"
-              style={{ backgroundColor: '#6CE9FE', color: '#0F0F0F' }}
+              style={{ backgroundColor: c.accent, color: '#FEFEFE' }}
             >
               Export PDF
             </button>
           </div>
         </div>
 
+        {/* Submission info */}
         <div
           className="rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-          style={{ backgroundColor: '#161616', border: '1px solid #FEFEFE11' }}
+          style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
         >
           <div>
-            <p className="text-xs mb-1" style={{ color: '#FEFEFE44' }}>Submitted on</p>
-            <p className="text-sm font-medium" style={{ color: '#FEFEFE' }}>
+            <p className="text-xs mb-1" style={{ color: c.textMuted }}>Submitted on</p>
+            <p className="text-sm font-medium" style={{ color: c.textPrimary }}>
               {formatDate(client.submittedAt)}
             </p>
           </div>
           <div>
-            <p className="text-xs mb-1" style={{ color: '#FEFEFE44' }}>Portal link</p>
-            <p className="text-sm font-mono" style={{ color: '#6CE9FE' }}>{client.portalLink}</p>
+            <p className="text-xs mb-1" style={{ color: c.textMuted }}>Portal link</p>
+            <p className="text-sm font-mono" style={{ color: c.accentText }}>{client.portalLink}</p>
           </div>
         </div>
 
+        {/* Brief or not submitted */}
         {submission && template ? (
           <div className="flex flex-col gap-8">
 
             <div>
-              <h2 className="text-base font-medium mb-4" style={{ color: '#FEFEFE' }}>
+              <h2 className="text-base font-medium mb-4" style={{ color: c.textPrimary }}>
                 Project brief
               </h2>
-              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #FEFEFE11' }}>
+              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${c.border}` }}>
                 {template.fields
                   .filter((field) => field.type !== 'file')
                   .map((field, idx) => (
@@ -266,21 +217,21 @@ export default function ClientDetail() {
                       key={field.id}
                       className="flex flex-col sm:flex-row px-6 py-4 gap-1 sm:gap-8"
                       style={{
-                        borderTop: idx === 0 ? 'none' : '1px solid #FEFEFE08',
-                        backgroundColor: idx % 2 === 0 ? '#161616' : 'transparent',
+                        borderTop: idx === 0 ? 'none' : `1px solid ${c.border}`,
+                        backgroundColor: idx % 2 === 0 ? c.bgCard : c.bgCardAlt,
                       }}
                     >
                       <p
                         className="text-xs font-medium sm:w-40 shrink-0 pt-0.5"
-                        style={{ color: '#FEFEFE44' }}
+                        style={{ color: c.textMuted }}
                       >
                         {field.label}
                       </p>
-                      <p className="text-sm flex-1" style={{ color: '#FEFEFE' }}>
+                      <p className="text-sm flex-1" style={{ color: c.textPrimary }}>
                         {submission.answers?.get
                           ? submission.answers.get(field.id)
                           : submission.answers?.[field.id] || (
-                              <span style={{ color: '#FEFEFE33', fontStyle: 'italic' }}>
+                              <span style={{ color: c.textFaint, fontStyle: 'italic' }}>
                                 No answer provided
                               </span>
                             )}
@@ -292,7 +243,7 @@ export default function ClientDetail() {
 
             {submission.files && submission.files.length > 0 && (
               <div>
-                <h2 className="text-base font-medium mb-4" style={{ color: '#FEFEFE' }}>
+                <h2 className="text-base font-medium mb-4" style={{ color: c.textPrimary }}>
                   Uploaded files
                 </h2>
                 <div className="flex flex-col gap-3">
@@ -302,7 +253,7 @@ export default function ClientDetail() {
                       <div
                         key={file.filename}
                         className="flex items-center justify-between rounded-xl px-5 py-4"
-                        style={{ backgroundColor: '#161616', border: '1px solid #FEFEFE08' }}
+                        style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
                       >
                         <div className="flex items-center gap-4">
                           {isImage ? (
@@ -310,34 +261,28 @@ export default function ClientDetail() {
                               src={file.url}
                               alt={file.originalName}
                               className="w-12 h-12 rounded-lg object-cover"
-                              style={{ border: '1px solid #FEFEFE11' }}
+                              style={{ border: `1px solid ${c.border}` }}
                             />
                           ) : (
                             <div
                               className="w-12 h-12 rounded-lg flex items-center justify-center"
-                              style={{ backgroundColor: '#6CE9FE15', border: '1px solid #6CE9FE22' }}
+                              style={{ backgroundColor: c.accentBg, border: `1px solid ${c.accentBorder}` }}
                             >
-                              <svg className="w-5 h-5" fill="none" stroke="#6CE9FE" viewBox="0 0 24 24">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                                />
+                              <svg className="w-5 h-5" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                               </svg>
                             </div>
                           )}
                           <div>
-                            <p className="text-sm font-medium" style={{ color: '#FEFEFE' }}>
+                            <p className="text-sm font-medium" style={{ color: c.textPrimary }}>
                               {file.originalName}
                             </p>
-                            <p className="text-xs mt-0.5" style={{ color: '#FEFEFE44' }}>
+                            <p className="text-xs mt-0.5" style={{ color: c.textMuted }}>
                               {file.mimetype} · {(file.size / 1024).toFixed(1)} KB
                             </p>
                           </div>
                         </div>
-                        
-                          <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.originalName} className="text-xs px-3 py-1.5 rounded-lg transition" style={{ backgroundColor: '#6CE9FE22', color: '#6CE9FE', border: '1px solid #6CE9FE33' }}>
+                        <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.originalName} className="text-xs px-3 py-1.5 rounded-lg transition" style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}>
                           Download
                         </a>
                       </div>
@@ -351,9 +296,9 @@ export default function ClientDetail() {
         ) : (
           <div
             className="rounded-xl px-6 py-12 text-center"
-            style={{ border: '1px solid #FEFEFE11' }}
+            style={{ border: `1px solid ${c.border}` }}
           >
-            <p className="text-sm mb-4" style={{ color: '#FEFEFE44' }}>
+            <p className="text-sm mb-4" style={{ color: c.textMuted }}>
               This client has not submitted their brief yet.
             </p>
             <button
@@ -364,7 +309,7 @@ export default function ClientDetail() {
                 alert('Portal link copied! Send this to your client.');
               }}
               className="px-4 py-2 rounded-lg text-sm transition"
-              style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
+              style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
             >
               Copy portal link
             </button>

@@ -4,10 +4,17 @@ import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import ClientModal from '../components/ClientModal';
 import { getClients, createClient, updateClient, deleteClient } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
+import { t } from '../utils/theme';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [provider, setProvider] = useState(null);
+  const { theme } = useTheme();
+  const c = t(theme);
+  const [provider] = useState(() => {
+    const stored = localStorage.getItem('provider');
+    return stored ? JSON.parse(stored) : null;
+  });
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -17,9 +24,7 @@ export default function Dashboard() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('provider');
-    if (!stored) { navigate('/login'); return; }
-    setProvider(JSON.parse(stored));
+    if (!provider) { navigate('/login'); return; }
 
     const fetchClients = async () => {
       try {
@@ -32,7 +37,7 @@ export default function Dashboard() {
       }
     };
     fetchClients();
-  }, [navigate]);
+  }, [navigate, provider]);
 
   const filtered = clients.filter((c) => {
     const matchesSearch =
@@ -62,7 +67,7 @@ export default function Dashboard() {
   const handleUpdate = async (form) => {
     const updated = await updateClient(modal.client.id, form);
     setClients((prev) =>
-      prev.map((c) => (c.id === modal.client.id ? { ...c, ...updated } : c))
+      prev.map((cl) => (cl.id === modal.client.id ? { ...cl, ...updated } : cl))
     );
   };
 
@@ -70,7 +75,7 @@ export default function Dashboard() {
     setDeleting(true);
     try {
       await deleteClient(clientId);
-      setClients((prev) => prev.filter((c) => c.id !== clientId));
+      setClients((prev) => prev.filter((cl) => cl.id !== clientId));
       setConfirmDelete(null);
     } catch (err) {
       console.error('Delete failed:', err);
@@ -81,20 +86,20 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
         <Navbar isProvider />
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm" style={{ color: '#FEFEFE33' }}>Loading clients...</p>
+          <p className="text-sm" style={{ color: c.textMuted }}>Loading clients...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0F0F0F' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
       <Navbar isProvider />
 
-      {/* Modals */}
+      {/* Create/Edit Modal */}
       {modal && (
         <ClientModal
           mode={modal.mode}
@@ -112,24 +117,24 @@ export default function Dashboard() {
         >
           <div
             className="w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4"
-            style={{ backgroundColor: '#161616', border: '1px solid #FEFEFE11' }}
+            style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
           >
             <h2
               className="text-2xl"
-              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
+              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
             >
               Delete client?
             </h2>
-            <p className="text-sm" style={{ color: '#FEFEFE66' }}>
+            <p className="text-sm" style={{ color: c.textSecondary }}>
               Are you sure you want to delete{' '}
-              <span style={{ color: '#FEFEFE' }}>{confirmDelete.name}</span>?
+              <span style={{ color: c.textPrimary }}>{confirmDelete.name}</span>?
               This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setConfirmDelete(null)}
                 className="px-4 py-2 rounded-lg text-sm transition"
-                style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
+                style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
               >
                 Cancel
               </button>
@@ -137,7 +142,7 @@ export default function Dashboard() {
                 onClick={() => handleDelete(confirmDelete.id)}
                 disabled={deleting}
                 className="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
-                style={{ backgroundColor: '#FF6B6B22', color: '#FF6B6B', border: '1px solid #FF6B6B44' }}
+                style={{ backgroundColor: c.deleteBg, color: c.deleteText, border: `1px solid ${c.deleteBorder}` }}
               >
                 {deleting ? 'Deleting...' : 'Delete'}
               </button>
@@ -153,15 +158,15 @@ export default function Dashboard() {
           <div>
             <h1
               className="text-5xl"
-              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#FEFEFE' }}
+              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
             >
               Dashboard
             </h1>
-            <p className="text-sm mt-1" style={{ color: '#FEFEFE66' }}>
+            <p className="text-sm mt-1" style={{ color: c.textSecondary }}>
               Welcome back, {provider?.name}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => {
                 const stored = localStorage.getItem('provider');
@@ -173,21 +178,21 @@ export default function Dashboard() {
                 alert('Portal link copied!');
               }}
               className="px-4 py-2 rounded-lg text-sm transition"
-              style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
+              style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
             >
               Copy portal link
             </button>
             <Link
               to="/form-builder"
               className="px-4 py-2 rounded-lg text-sm transition"
-              style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
+              style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
             >
               Edit form
             </Link>
             <button
               onClick={() => setModal({ mode: 'create', client: null })}
               className="px-4 py-2 rounded-lg text-sm font-medium transition"
-              style={{ backgroundColor: '#6CE9FE', color: '#0F0F0F' }}
+              style={{ backgroundColor: c.accent, color: '#FEFEFE' }}
             >
               Add client
             </button>
@@ -204,12 +209,12 @@ export default function Dashboard() {
             <div
               key={stat.label}
               className="rounded-xl px-6 py-5 flex flex-col gap-1"
-              style={{ backgroundColor: '#161616', border: '1px solid #FEFEFE11' }}
+              style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
             >
-              <span className="text-xs" style={{ color: '#FEFEFE44' }}>{stat.label}</span>
+              <span className="text-xs" style={{ color: c.textMuted }}>{stat.label}</span>
               <span
                 className="text-3xl"
-                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: '#6CE9FE' }}
+                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.accentText }}
               >
                 {stat.value}
               </span>
@@ -226,9 +231,9 @@ export default function Dashboard() {
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1 rounded-lg px-4 py-2.5 text-sm focus:outline-none transition"
             style={{
-              backgroundColor: '#FEFEFE08',
-              border: '1px solid #FEFEFE22',
-              color: '#FEFEFE',
+              backgroundColor: c.bgInput,
+              border: `1px solid ${c.borderMid}`,
+              color: c.textPrimary,
             }}
           />
           <select
@@ -236,14 +241,14 @@ export default function Dashboard() {
             onChange={(e) => setFilter(e.target.value)}
             className="rounded-lg px-4 py-2.5 text-sm focus:outline-none transition"
             style={{
-              backgroundColor: '#161616',
-              border: '1px solid #FEFEFE22',
-              color: '#FEFEFE',
+              backgroundColor: c.bgCard,
+              border: `1px solid ${c.borderMid}`,
+              color: c.textPrimary,
             }}
           >
-            <option value="all" style={{ backgroundColor: '#161616' }}>All statuses</option>
-            <option value="completed" style={{ backgroundColor: '#161616' }}>Completed</option>
-            <option value="pending" style={{ backgroundColor: '#161616' }}>Pending</option>
+            <option value="all">All statuses</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
           </select>
         </div>
 
@@ -251,54 +256,47 @@ export default function Dashboard() {
         <div className="flex flex-col gap-3">
           {filtered.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-sm" style={{ color: '#FEFEFE33' }}>No clients found.</p>
+              <p className="text-sm" style={{ color: c.textMuted }}>No clients found.</p>
             </div>
           ) : (
             filtered.map((client) => (
               <div
                 key={client.id}
                 className="rounded-xl px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-                style={{ border: '1px solid #FEFEFE11', backgroundColor: '#161616' }}
+                style={{ border: `1px solid ${c.border}`, backgroundColor: c.bgCard }}
               >
-                {/* Client info — clickable */}
-                <Link
-                  to={`/client/${client.id}`}
-                  className="flex flex-col gap-1 flex-1"
-                >
+                <Link to={`/client/${client.id}`} className="flex flex-col gap-1 flex-1">
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold" style={{ color: '#FEFEFE' }}>
+                    <span className="text-sm font-semibold" style={{ color: c.textPrimary }}>
                       {client.name}
                     </span>
                     <StatusBadge status={client.status} />
                   </div>
-                  <span className="text-sm" style={{ color: '#FEFEFE66' }}>{client.business}</span>
-                  <span className="text-xs" style={{ color: '#FEFEFE44' }}>{client.email}</span>
+                  <span className="text-sm" style={{ color: c.textSecondary }}>{client.business}</span>
+                  <span className="text-xs" style={{ color: c.textMuted }}>{client.email}</span>
                 </Link>
 
-                {/* Right side */}
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs" style={{ color: '#FEFEFE44' }}>
+                    <span className="text-xs" style={{ color: c.textMuted }}>
                       {client.status === 'completed' ? 'Submitted' : 'Not yet submitted'}
                     </span>
-                    <span className="text-xs" style={{ color: '#FEFEFE66' }}>
+                    <span className="text-xs" style={{ color: c.textSecondary }}>
                       {formatDate(client.submittedAt)}
                     </span>
                   </div>
-
-                  {/* Actions */}
                   <div className="flex gap-2">
                     <button
                       onClick={() => setModal({ mode: 'edit', client })}
                       className="text-xs px-3 py-1.5 rounded-lg transition"
-                      style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
+                      style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => setConfirmDelete(client)}
                       className="text-xs px-3 py-1.5 rounded-lg transition"
-                      style={{ border: '1px solid #FF6B6B33', color: '#FF6B6B66' }}
+                      style={{ border: `1px solid ${c.deleteBorder}`, color: c.deleteText }}
                     >
                       Delete
                     </button>
