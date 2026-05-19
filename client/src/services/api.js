@@ -93,15 +93,71 @@ export const getSubmissionByClientId = async (clientId) => {
   return res.json();
 };
 
-export const submitForm = async (data) => {
+export const submitForm = async (data, files = {}) => {
   if (DEMO_MODE) {
     await delay(800);
     return { success: true, id: 'demo-001' };
   }
+
+  const formData = new FormData();
+  formData.append('portalLink', data.portalLink);
+  formData.append('answers', JSON.stringify(data.answers));
+
+  // Attach each file using its field ID as the key
+  Object.entries(files).forEach(([fieldId, file]) => {
+    if (file) formData.append(fieldId, file);
+  });
+
   const res = await fetch(`${BASE_URL}/submissions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    body: formData,
+    // Do NOT set Content-Type header — browser sets it automatically with boundary
+  });
+  return res.json();
+};
+
+export const createClient = async (data) => {
+  if (DEMO_MODE) {
+    await delay(500);
+    return {
+      id: `demo-${Date.now()}`,
+      name: data.name,
+      business: data.business,
+      email: data.email,
+      status: 'pending',
+      submittedAt: null,
+      portalLink: 'demo-001',
+    };
+  }
+  const res = await fetch(`${BASE_URL}/clients`, {
+    method: 'POST',
+    headers: authHeaders(),
     body: JSON.stringify(data),
+  });
+  return res.json();
+};
+
+export const updateClient = async (clientId, data) => {
+  if (DEMO_MODE) {
+    await delay(400);
+    return { success: true };
+  }
+  const res = await fetch(`${BASE_URL}/clients/${clientId}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  return res.json();
+};
+
+export const deleteClient = async (clientId) => {
+  if (DEMO_MODE) {
+    await delay(400);
+    return { success: true };
+  }
+  const res = await fetch(`${BASE_URL}/clients/${clientId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
   });
   return res.json();
 };

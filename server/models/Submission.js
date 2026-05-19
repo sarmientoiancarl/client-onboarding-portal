@@ -1,5 +1,14 @@
 const mongoose = require('mongoose');
 
+const fileSchema = new mongoose.Schema({
+  fieldId: String,
+  originalName: String,
+  filename: String,
+  mimetype: String,
+  size: Number,
+  url: String,
+});
+
 const submissionSchema = new mongoose.Schema(
   {
     providerId: {
@@ -26,6 +35,7 @@ const submissionSchema = new mongoose.Schema(
       type: Map,
       of: String,
     },
+    files: [fileSchema],
     status: {
       type: String,
       enum: ['pending', 'completed'],

@@ -8,6 +8,7 @@ const FIELD_TYPES = [
   { value: 'email', label: 'Email' },
   { value: 'textarea', label: 'Long text' },
   { value: 'select', label: 'Dropdown' },
+  { value: 'file', label: 'File upload' },
 ];
 
 const generateId = () => `field-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;

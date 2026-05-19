@@ -1,33 +1,46 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth');
+const upload = require('../middleware/upload');
 const Submission = require('../models/Submission');
 const Provider = require('../models/Provider');
 
-// Submit a brief (public — for clients)
-router.post('/', async (req, res) => {
+// Submit a brief with optional file uploads (public — for clients)
+router.post('/', upload.any(), async (req, res) => {
   try {
     const { portalLink, answers } = req.body;
+    const parsedAnswers = typeof answers === 'string' ? JSON.parse(answers) : answers;
 
     const provider = await Provider.findOne({ portalLink });
     if (!provider) {
       return res.status(404).json({ message: 'Portal not found' });
     }
 
+    // Map uploaded files to their field IDs
+    const files = (req.files || []).map((file) => ({
+      fieldId: file.fieldname,
+      originalName: file.originalname,
+      filename: file.filename,
+      mimetype: file.mimetype,
+      size: file.size,
+      url: `http://localhost:5000/uploads/${file.filename}`,
+    }));
+
     const submission = await Submission.create({
       providerId: provider._id,
       portalLink,
-      clientName: answers['field-001'] || 'Unknown',
-      clientEmail: answers['field-003'] || 'Unknown',
-      clientBusiness: answers['field-002'] || '',
-      answers,
+      clientName: parsedAnswers['field-001'] || 'Unknown',
+      clientEmail: parsedAnswers['field-003'] || 'Unknown',
+      clientBusiness: parsedAnswers['field-002'] || '',
+      answers: parsedAnswers,
+      files,
       status: 'completed',
     });
 
     res.status(201).json({ success: true, id: submission._id });
   } catch (err) {
     console.error('Submit error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: err.message || 'Server error' });
   }
 });
 
@@ -37,7 +50,6 @@ router.get('/', authMiddleware, async (req, res) => {
     const submissions = await Submission.find({
       providerId: req.providerId,
     }).sort({ createdAt: -1 });
-
     res.json(submissions);
   } catch (err) {
     console.error('Get submissions error:', err);
@@ -52,11 +64,9 @@ router.get('/:clientId', authMiddleware, async (req, res) => {
       _id: req.params.clientId,
       providerId: req.providerId,
     });
-
     if (!submission) {
       return res.status(404).json({ message: 'Submission not found' });
     }
-
     res.json(submission);
   } catch (err) {
     console.error('Get submission error:', err);
