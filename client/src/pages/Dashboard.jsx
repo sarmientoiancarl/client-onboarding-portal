@@ -183,16 +183,16 @@ export default function Dashboard() {
               Copy portal link
             </button>
             <Link
-              to="/form-builder"
+              to="/templates"
               className="px-4 py-2 rounded-lg text-sm transition"
               style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
             >
-              Edit form
+              Manage forms
             </Link>
             <button
               onClick={() => setModal({ mode: 'create', client: null })}
               className="px-4 py-2 rounded-lg text-sm font-medium transition"
-              style={{ backgroundColor: c.accent, color: '#FEFEFE' }}
+              style={{ backgroundColor: c.accent, color: c.accentFg }}
             >
               Add client
             </button>

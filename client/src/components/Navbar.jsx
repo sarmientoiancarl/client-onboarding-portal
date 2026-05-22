@@ -46,7 +46,7 @@ export default function Navbar({ isProvider }) {
           <Link
             to="/login"
             className="text-sm px-4 py-2 rounded-lg font-medium transition"
-            style={{ backgroundColor: c.accent, color: '#FEFEFE' }}
+            style={{ backgroundColor: c.accent, color: c.accentFg }}
           >
             Provider login
           </Link>

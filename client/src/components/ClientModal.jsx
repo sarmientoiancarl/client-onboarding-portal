@@ -137,7 +137,7 @@ export default function ClientModal({ mode, client, onClose, onSave }) {
             onClick={handleSubmit}
             disabled={loading}
             className="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
-            style={{ backgroundColor: c.accent, color: '#FEFEFE' }}
+            style={{ backgroundColor: c.accent, color: c.accentFg }}
           >
             {loading ? 'Saving...' : mode === 'create' ? 'Add client' : 'Save changes'}
           </button>

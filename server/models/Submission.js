@@ -16,31 +16,14 @@ const submissionSchema = new mongoose.Schema(
       ref: 'Provider',
       required: true,
     },
-    portalLink: {
-      type: String,
-      required: true,
-    },
-    clientName: {
-      type: String,
-      required: true,
-    },
-    clientEmail: {
-      type: String,
-      required: true,
-    },
-    clientBusiness: {
-      type: String,
-    },
-    answers: {
-      type: Map,
-      of: String,
-    },
+    portalLink: { type: String, required: true },
+    templateId: { type: mongoose.Schema.Types.ObjectId, ref: 'FormTemplate', default: null },
+    clientName: { type: String, required: true },
+    clientEmail: { type: String, required: true },
+    clientBusiness: { type: String },
+    answers: { type: Map, of: String },
     files: [fileSchema],
-    status: {
-      type: String,
-      enum: ['pending', 'completed'],
-      default: 'completed',
-    },
+    status: { type: String, enum: ['pending', 'completed'], default: 'completed' },
   },
   { timestamps: true }
 );

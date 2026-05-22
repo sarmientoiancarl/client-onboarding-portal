@@ -71,6 +71,36 @@ export default function ClientDetail() {
     }
   };
 
+  const renderAnswerValue = (field, value) => {
+    if (!value) {
+      return (
+        <span style={{ color: c.textFaint, fontStyle: 'italic' }}>
+          No answer provided
+        </span>
+      );
+    }
+
+    if (field.type === 'url') {
+      return (
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+          style={{ color: c.accentText, wordBreak: 'break-all' }}
+        >
+          {value}
+        </a>
+      );
+    }
+
+    return (
+      <span style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+        {value}
+      </span>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
@@ -140,14 +170,19 @@ export default function ClientDetail() {
 
       <div className="max-w-3xl mx-auto w-full px-6 py-10 flex flex-col gap-8">
 
-        <Link to="/dashboard" className="text-sm transition" style={{ color: c.textMuted }}>
+        {/* Back */}
+        <Link
+          to="/dashboard"
+          className="text-sm transition"
+          style={{ color: c.textMuted }}
+        >
           Back to dashboard
         </Link>
 
         {/* Client header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <h1
                 className="text-4xl"
                 style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
@@ -159,7 +194,7 @@ export default function ClientDetail() {
             <p className="text-sm" style={{ color: c.textSecondary }}>{client.business}</p>
             <p className="text-xs" style={{ color: c.textMuted }}>{client.email}</p>
           </div>
-          <div className="flex gap-2 self-start">
+          <div className="flex gap-2 self-start flex-wrap">
             <button
               onClick={() => setModal(true)}
               className="px-4 py-2 rounded-lg text-sm transition"
@@ -177,7 +212,7 @@ export default function ClientDetail() {
             <button
               onClick={() => exportClientPDF(client, template, submission)}
               className="px-4 py-2 rounded-lg text-sm font-medium transition"
-              style={{ backgroundColor: c.accent, color: '#FEFEFE' }}
+              style={{ backgroundColor: c.accent, color: c.accentFg }}
             >
               Export PDF
             </button>
@@ -186,7 +221,7 @@ export default function ClientDetail() {
 
         {/* Submission info */}
         <div
-          className="rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+          className="rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
           style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
         >
           <div>
@@ -205,6 +240,7 @@ export default function ClientDetail() {
         {submission && template ? (
           <div className="flex flex-col gap-8">
 
+            {/* Answers */}
             <div>
               <h2 className="text-base font-medium mb-4" style={{ color: c.textPrimary }}>
                 Project brief
@@ -212,35 +248,39 @@ export default function ClientDetail() {
               <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${c.border}` }}>
                 {template.fields
                   .filter((field) => field.type !== 'file')
-                  .map((field, idx) => (
-                    <div
-                      key={field.id}
-                      className="flex flex-col sm:flex-row px-6 py-4 gap-1 sm:gap-8"
-                      style={{
-                        borderTop: idx === 0 ? 'none' : `1px solid ${c.border}`,
-                        backgroundColor: idx % 2 === 0 ? c.bgCard : c.bgCardAlt,
-                      }}
-                    >
-                      <p
-                        className="text-xs font-medium sm:w-40 shrink-0 pt-0.5"
-                        style={{ color: c.textMuted }}
+                  .map((field, idx) => {
+                    const value = submission.answers?.get
+                      ? submission.answers.get(field.id)
+                      : submission.answers?.[field.id];
+
+                    return (
+                      <div
+                        key={field.id}
+                        className="flex flex-col sm:flex-row px-6 py-4 gap-2 sm:gap-8"
+                        style={{
+                          borderTop: idx === 0 ? 'none' : `1px solid ${c.border}`,
+                          backgroundColor: idx % 2 === 0 ? c.bgCard : c.bgCardAlt,
+                        }}
                       >
-                        {field.label}
-                      </p>
-                      <p className="text-sm flex-1" style={{ color: c.textPrimary }}>
-                        {submission.answers?.get
-                          ? submission.answers.get(field.id)
-                          : submission.answers?.[field.id] || (
-                              <span style={{ color: c.textFaint, fontStyle: 'italic' }}>
-                                No answer provided
-                              </span>
-                            )}
-                      </p>
-                    </div>
-                  ))}
+                        <p
+                          className="text-xs font-medium sm:w-40 shrink-0 pt-0.5"
+                          style={{ color: c.textMuted }}
+                        >
+                          {field.label}
+                        </p>
+                        <div
+                          className="text-sm flex-1 min-w-0"
+                          style={{ color: c.textPrimary }}
+                        >
+                          {renderAnswerValue(field, value)}
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
 
+            {/* Uploaded files */}
             {submission.files && submission.files.length > 0 && (
               <div>
                 <h2 className="text-base font-medium mb-4" style={{ color: c.textPrimary }}>
@@ -252,29 +292,37 @@ export default function ClientDetail() {
                     return (
                       <div
                         key={file.filename}
-                        className="flex items-center justify-between rounded-xl px-5 py-4"
+                        className="flex items-center justify-between rounded-xl px-5 py-4 gap-4"
                         style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
                           {isImage ? (
                             <img
                               src={file.url}
                               alt={file.originalName}
-                              className="w-12 h-12 rounded-lg object-cover"
+                              className="w-12 h-12 rounded-lg object-cover shrink-0"
                               style={{ border: `1px solid ${c.border}` }}
                             />
                           ) : (
                             <div
-                              className="w-12 h-12 rounded-lg flex items-center justify-center"
+                              className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
                               style={{ backgroundColor: c.accentBg, border: `1px solid ${c.accentBorder}` }}
                             >
                               <svg className="w-5 h-5" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                />
                               </svg>
                             </div>
                           )}
-                          <div>
-                            <p className="text-sm font-medium" style={{ color: c.textPrimary }}>
+                          <div className="min-w-0">
+                            <p
+                              className="text-sm font-medium"
+                              style={{ color: c.textPrimary, wordBreak: 'break-word' }}
+                            >
                               {file.originalName}
                             </p>
                             <p className="text-xs mt-0.5" style={{ color: c.textMuted }}>
@@ -282,7 +330,18 @@ export default function ClientDetail() {
                             </p>
                           </div>
                         </div>
-                        <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.originalName} className="text-xs px-3 py-1.5 rounded-lg transition" style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}>
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download={file.originalName}
+                          className="text-xs px-3 py-1.5 rounded-lg transition shrink-0"
+                          style={{
+                            backgroundColor: c.accentBg,
+                            color: c.accentText,
+                            border: `1px solid ${c.accentBorder}`,
+                          }}
+                        >
                           Download
                         </a>
                       </div>

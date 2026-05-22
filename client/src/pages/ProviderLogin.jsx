@@ -107,7 +107,7 @@ export default function ProviderLogin() {
               type="submit"
               disabled={loading}
               className="px-6 py-3 rounded-lg text-sm font-medium transition mt-2 disabled:opacity-50"
-              style={{ backgroundColor: c.accent, color: '#FEFEFE' }}
+              style={{ backgroundColor: c.accent, color: c.accentFg }}
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>

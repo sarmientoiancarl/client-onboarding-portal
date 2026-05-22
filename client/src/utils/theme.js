@@ -23,6 +23,9 @@ export const t = (theme) => ({
   accentBorder: theme === 'light' ? '#0AA8C730' : '#6CE9FE30',
   accentText: theme === 'light' ? '#0AA8C7' : '#6CE9FE',
 
+  // Text ON accent background — always black for contrast
+  accentFg: '#0F0F0F',
+
   // Status
   successBg: theme === 'light' ? '#0AA8C715' : '#6CE9FE22',
   successText: theme === 'light' ? '#0AA8C7' : '#6CE9FE',

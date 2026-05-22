@@ -5,10 +5,10 @@ const upload = require('../middleware/upload');
 const Submission = require('../models/Submission');
 const Provider = require('../models/Provider');
 
-// Submit a brief with optional file uploads (public — for clients)
+// Submit a brief (public — for clients)
 router.post('/', upload.any(), async (req, res) => {
   try {
-    const { portalLink, answers } = req.body;
+    const { portalLink, templateId, answers } = req.body;
     const parsedAnswers = typeof answers === 'string' ? JSON.parse(answers) : answers;
 
     const provider = await Provider.findOne({ portalLink });
@@ -16,7 +16,6 @@ router.post('/', upload.any(), async (req, res) => {
       return res.status(404).json({ message: 'Portal not found' });
     }
 
-    // Map uploaded files to their field IDs
     const files = (req.files || []).map((file) => ({
       fieldId: file.fieldname,
       originalName: file.originalname,
@@ -29,6 +28,7 @@ router.post('/', upload.any(), async (req, res) => {
     const submission = await Submission.create({
       providerId: provider._id,
       portalLink,
+      templateId: templateId || null,
       clientName: parsedAnswers['field-001'] || 'Unknown',
       clientEmail: parsedAnswers['field-003'] || 'Unknown',
       clientBusiness: parsedAnswers['field-002'] || '',
@@ -57,7 +57,7 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// Get one submission by client ID (authenticated)
+// Get one submission by ID (authenticated)
 router.get('/:clientId', authMiddleware, async (req, res) => {
   try {
     const submission = await Submission.findOne({

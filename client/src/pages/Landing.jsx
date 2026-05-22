@@ -35,7 +35,7 @@ export default function Landing() {
           <Link
             to="/portal/demo-001"
             className="px-6 py-3 rounded-lg text-sm font-medium transition"
-            style={{ backgroundColor: c.accent, color: '#FEFEFE' }}
+            style={{ backgroundColor: c.accent, color: c.accentFg }}
           >
             See client view
           </Link>
@@ -166,7 +166,7 @@ export default function Landing() {
           <Link
             to="/portal/demo-001"
             className="px-6 py-3 rounded-lg text-sm font-medium transition"
-            style={{ backgroundColor: c.accent, color: '#FEFEFE' }}
+            style={{ backgroundColor: c.accent, color: c.accentFg }}
           >
             Try client view
           </Link>

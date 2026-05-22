@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { getFormTemplate, saveFormTemplate } from '../services/api';
+import { getFormTemplateById, saveFormTemplate } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { t } from '../utils/theme';
 
 const FIELD_TYPES = [
   { value: 'text', label: 'Short text' },
   { value: 'email', label: 'Email' },
+  { value: 'url', label: 'URL' },
   { value: 'textarea', label: 'Long text' },
   { value: 'select', label: 'Dropdown' },
   { value: 'file', label: 'File upload' },
@@ -18,9 +19,10 @@ const emptyField = () => ({ id: generateId(), type: 'text', label: '', placehold
 
 export default function FormBuilder() {
   const navigate = useNavigate();
+  const { templateId } = useParams();
   const { theme } = useTheme();
   const c = t(theme);
-  const [title, setTitle] = useState('Client Intake Form');
+  const [title, setTitle] = useState('');
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,10 +33,11 @@ export default function FormBuilder() {
   useEffect(() => {
     const stored = localStorage.getItem('provider');
     if (!stored) { navigate('/login'); return; }
+    if (!templateId) { navigate('/templates'); return; }
 
     const fetchForm = async () => {
       try {
-        const data = await getFormTemplate();
+        const data = await getFormTemplateById(templateId);
         setTitle(data.title || 'Client Intake Form');
         setFields(data.fields || []);
       } catch (err) {
@@ -44,7 +47,7 @@ export default function FormBuilder() {
       }
     };
     fetchForm();
-  }, [navigate]);
+  }, [navigate, templateId]);
 
   const addField = () => {
     const newField = emptyField();
@@ -105,7 +108,7 @@ export default function FormBuilder() {
     setSaving(true);
     setError('');
     try {
-      await saveFormTemplate(title, fields);
+      await saveFormTemplate(templateId, title, fields);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
@@ -143,15 +146,14 @@ export default function FormBuilder() {
 
       <div className="max-w-3xl mx-auto w-full px-6 py-10 flex flex-col gap-8">
 
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <Link
-              to="/dashboard"
+              to="/templates"
               className="text-sm transition mb-2 inline-block"
               style={{ color: c.textMuted }}
             >
-              Back to dashboard
+              Back to templates
             </Link>
             <h1
               className="text-5xl"
@@ -160,23 +162,19 @@ export default function FormBuilder() {
               Form Builder
             </h1>
             <p className="text-sm mt-1" style={{ color: c.textSecondary }}>
-              Customize the intake form your clients will fill out.
+              Customize this intake form for your clients.
             </p>
           </div>
           <button
             onClick={handleSave}
             disabled={saving}
             className="px-5 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50 self-start sm:self-auto"
-            style={{
-              backgroundColor: saved ? '#1D9E75' : c.accent,
-              color: '#FEFEFE',
-            }}
+            style={{ backgroundColor: saved ? '#1D9E75' : c.accent, color: '#FEFEFE' }}
           >
             {saving ? 'Saving...' : saved ? 'Saved' : 'Save form'}
           </button>
         </div>
 
-        {/* Form title */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" style={{ color: c.textSecondary }}>
             Form title
@@ -186,20 +184,17 @@ export default function FormBuilder() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             style={inputStyle}
-            placeholder="e.g. Client Intake Form"
+            placeholder="e.g. Logo Design Intake Form"
           />
         </div>
 
-        {/* Fields list */}
         <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium" style={{ color: c.textSecondary }}>
-              Fields{' '}
-              <span className="text-xs font-normal ml-1" style={{ color: c.textFaint }}>
-                {fields.length} total
-              </span>
-            </p>
-          </div>
+          <p className="text-sm font-medium" style={{ color: c.textSecondary }}>
+            Fields{' '}
+            <span className="text-xs font-normal ml-1" style={{ color: c.textFaint }}>
+              {fields.length} total
+            </span>
+          </p>
 
           {fields.length === 0 && (
             <div
@@ -218,7 +213,6 @@ export default function FormBuilder() {
               className="rounded-xl overflow-hidden"
               style={{ border: `1px solid ${c.border}`, backgroundColor: c.bgCard }}
             >
-              {/* Field header */}
               <div
                 className="flex items-center justify-between px-5 py-4 cursor-pointer"
                 onClick={() => setExpandedField(expandedField === field.id ? null : field.id)}
@@ -228,7 +222,7 @@ export default function FormBuilder() {
                     className="text-xs px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}
                   >
-                    {FIELD_TYPES.find((t) => t.value === field.type)?.label || field.type}
+                    {FIELD_TYPES.find((ft) => ft.value === field.type)?.label || field.type}
                   </span>
                   <span className="text-sm" style={{ color: field.label ? c.textPrimary : c.textMuted }}>
                     {field.label || 'Untitled field'}
@@ -262,14 +256,12 @@ export default function FormBuilder() {
                 </div>
               </div>
 
-              {/* Field editor */}
               {expandedField === field.id && (
                 <div
                   className="px-5 pb-5 flex flex-col gap-4"
                   style={{ borderTop: `1px solid ${c.border}` }}
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium" style={{ color: c.textSecondary }}>Label</label>
                       <input

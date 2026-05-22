@@ -54,68 +54,6 @@ export const getClients = async () => {
   return res.json();
 };
 
-// FORMS
-export const getFormTemplate = async (portalLink = null) => {
-  if (DEMO_MODE) { await delay(300); return mockFormTemplate; }
-  const url = portalLink
-    ? `${BASE_URL}/forms/portal/${portalLink}`
-    : `${BASE_URL}/forms`;
-  const headers = portalLink
-    ? { 'Content-Type': 'application/json' }
-    : authHeaders();
-  const res = await fetch(url, { headers });
-  return res.json();
-};
-
-export const saveFormTemplate = async (title, fields) => {
-  if (DEMO_MODE) {
-    await delay(500);
-    return { success: true };
-  }
-  const res = await fetch(`${BASE_URL}/forms`, {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ title, fields }),
-  });
-  return res.json();
-};
-
-// SUBMISSIONS
-export const getSubmissionByClientId = async (clientId) => {
-  if (DEMO_MODE) {
-    await delay(300);
-    return mockSubmissions.find((s) => s.clientId === clientId) || null;
-  }
-  const res = await fetch(`${BASE_URL}/submissions/${clientId}`, {
-    headers: authHeaders(),
-  });
-  if (!res.ok) return null;
-  return res.json();
-};
-
-export const submitForm = async (data, files = {}) => {
-  if (DEMO_MODE) {
-    await delay(800);
-    return { success: true, id: 'demo-001' };
-  }
-
-  const formData = new FormData();
-  formData.append('portalLink', data.portalLink);
-  formData.append('answers', JSON.stringify(data.answers));
-
-  // Attach each file using its field ID as the key
-  Object.entries(files).forEach(([fieldId, file]) => {
-    if (file) formData.append(fieldId, file);
-  });
-
-  const res = await fetch(`${BASE_URL}/submissions`, {
-    method: 'POST',
-    body: formData,
-    // Do NOT set Content-Type header — browser sets it automatically with boundary
-  });
-  return res.json();
-};
-
 export const createClient = async (data) => {
   if (DEMO_MODE) {
     await delay(500);
@@ -138,10 +76,7 @@ export const createClient = async (data) => {
 };
 
 export const updateClient = async (clientId, data) => {
-  if (DEMO_MODE) {
-    await delay(400);
-    return { success: true };
-  }
+  if (DEMO_MODE) { await delay(400); return { success: true }; }
   const res = await fetch(`${BASE_URL}/clients/${clientId}`, {
     method: 'PATCH',
     headers: authHeaders(),
@@ -151,13 +86,106 @@ export const updateClient = async (clientId, data) => {
 };
 
 export const deleteClient = async (clientId) => {
-  if (DEMO_MODE) {
-    await delay(400);
-    return { success: true };
-  }
+  if (DEMO_MODE) { await delay(400); return { success: true }; }
   const res = await fetch(`${BASE_URL}/clients/${clientId}`, {
     method: 'DELETE',
     headers: authHeaders(),
+  });
+  return res.json();
+};
+
+// FORMS
+export const getFormTemplates = async () => {
+  if (DEMO_MODE) { await delay(300); return [mockFormTemplate]; }
+  const res = await fetch(`${BASE_URL}/forms`, { headers: authHeaders() });
+  return res.json();
+};
+
+export const getFormTemplateById = async (templateId) => {
+  if (DEMO_MODE) { await delay(300); return mockFormTemplate; }
+  const res = await fetch(`${BASE_URL}/forms/${templateId}`, { headers: authHeaders() });
+  return res.json();
+};
+
+export const getFormTemplatesByPortalLink = async (portalLink) => {
+  if (DEMO_MODE) { await delay(300); return [mockFormTemplate]; }
+  const res = await fetch(`${BASE_URL}/forms/portal/${portalLink}`);
+  return res.json();
+};
+
+export const getFormTemplate = async (portalLink = null) => {
+  if (DEMO_MODE) { await delay(300); return mockFormTemplate; }
+  const url = portalLink
+    ? `${BASE_URL}/forms/portal/${portalLink}`
+    : `${BASE_URL}/forms`;
+  const headers = portalLink
+    ? { 'Content-Type': 'application/json' }
+    : authHeaders();
+  const res = await fetch(url, { headers });
+  const data = await res.json();
+  return Array.isArray(data) ? data[0] : data;
+};
+
+export const createFormTemplate = async (title) => {
+  if (DEMO_MODE) {
+    await delay(400);
+    return { ...mockFormTemplate, _id: `demo-${Date.now()}`, title, fields: [] };
+  }
+  const res = await fetch(`${BASE_URL}/forms`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ title, fields: [] }),
+  });
+  return res.json();
+};
+
+export const saveFormTemplate = async (templateId, title, fields) => {
+  if (DEMO_MODE) { await delay(500); return { success: true }; }
+  const res = await fetch(`${BASE_URL}/forms/${templateId}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify({ title, fields }),
+  });
+  return res.json();
+};
+
+export const deleteFormTemplate = async (templateId) => {
+  if (DEMO_MODE) { await delay(400); return { success: true }; }
+  const res = await fetch(`${BASE_URL}/forms/${templateId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  return res.json();
+};
+
+// SUBMISSIONS
+export const getSubmissionByClientId = async (clientId) => {
+  if (DEMO_MODE) {
+    await delay(300);
+    return mockSubmissions.find((s) => s.clientId === clientId) || null;
+  }
+  const res = await fetch(`${BASE_URL}/submissions/${clientId}`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) return null;
+  return res.json();
+};
+
+export const submitForm = async (data, files = {}) => {
+  if (DEMO_MODE) { await delay(800); return { success: true, id: 'demo-001' }; }
+
+  const formData = new FormData();
+  formData.append('portalLink', data.portalLink);
+  formData.append('templateId', data.templateId || '');
+  formData.append('answers', JSON.stringify(data.answers));
+
+  Object.entries(files).forEach(([fieldId, file]) => {
+    if (file) formData.append(fieldId, file);
+  });
+
+  const res = await fetch(`${BASE_URL}/submissions`, {
+    method: 'POST',
+    body: formData,
   });
   return res.json();
 };
