@@ -20,6 +20,7 @@ export default function ClientDetail() {
   const [modal, setModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [previewFile, setPreviewFile] = useState(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('provider');
@@ -32,7 +33,7 @@ export default function ClientDetail() {
           getSubmissionByClientId(clientId),
           getFormTemplate(),
         ]);
-        const found = clients.find((c) => c.id === clientId);
+        const found = clients.find((cl) => cl.id === clientId);
         if (!found) { navigate('/dashboard'); return; }
         setClient(found);
         setSubmission(sub);
@@ -79,7 +80,6 @@ export default function ClientDetail() {
         </span>
       );
     }
-
     if (field.type === 'url') {
       return (
         <a
@@ -93,7 +93,6 @@ export default function ClientDetail() {
         </a>
       );
     }
-
     return (
       <span style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
         {value}
@@ -164,6 +163,97 @@ export default function ClientDetail() {
                 {deleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image lightbox */}
+      {previewFile && previewFile.type === 'image' && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8"
+          style={{ backgroundColor: '#0F0F0FF0' }}
+          onClick={() => setPreviewFile(null)}
+        >
+          <div
+            className="relative max-w-3xl w-full flex flex-col gap-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium" style={{ color: '#FEFEFE' }}>
+                {previewFile.originalName}
+              </p>
+              <div className="flex gap-2">
+                <a
+                  href={previewFile.url}
+                  download={previewFile.originalName}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs px-3 py-1.5 rounded-lg transition"
+                  style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}
+                >
+                  Download
+                </a>
+                <button
+                  onClick={() => setPreviewFile(null)}
+                  className="text-xs px-3 py-1.5 rounded-lg transition"
+                  style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <img
+              src={previewFile.url}
+              alt={previewFile.originalName}
+              className="w-full rounded-xl object-contain max-h-screen"
+              style={{ border: '1px solid #FEFEFE11' }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* PDF preview modal */}
+      {previewFile && previewFile.type === 'pdf' && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8"
+          style={{ backgroundColor: '#0F0F0FF0' }}
+          onClick={() => setPreviewFile(null)}
+        >
+          <div
+            className="relative w-full max-w-4xl flex flex-col gap-3"
+            style={{ height: '90vh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium" style={{ color: '#FEFEFE' }}>
+                {previewFile.originalName}
+              </p>
+              <div className="flex gap-2">
+                <a
+                  href={previewFile.url}
+                  download={previewFile.originalName}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs px-3 py-1.5 rounded-lg transition"
+                  style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}
+                >
+                  Download
+                </a>
+                <button
+                  onClick={() => setPreviewFile(null)}
+                  className="text-xs px-3 py-1.5 rounded-lg transition"
+                  style={{ border: '1px solid #FEFEFE22', color: '#FEFEFE66' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <iframe
+              src={previewFile.url}
+              title={previewFile.originalName}
+              className="w-full rounded-xl flex-1"
+              style={{ border: '1px solid #FEFEFE11', minHeight: '0' }}
+            />
           </div>
         </div>
       )}
@@ -252,7 +342,6 @@ export default function ClientDetail() {
                     const value = submission.answers?.get
                       ? submission.answers.get(field.id)
                       : submission.answers?.[field.id];
-
                     return (
                       <div
                         key={field.id}
@@ -268,10 +357,7 @@ export default function ClientDetail() {
                         >
                           {field.label}
                         </p>
-                        <div
-                          className="text-sm flex-1 min-w-0"
-                          style={{ color: c.textPrimary }}
-                        >
+                        <div className="text-sm flex-1 min-w-0" style={{ color: c.textPrimary }}>
                           {renderAnswerValue(field, value)}
                         </div>
                       </div>
@@ -289,6 +375,9 @@ export default function ClientDetail() {
                 <div className="flex flex-col gap-3">
                   {submission.files.map((file) => {
                     const isImage = file.mimetype?.startsWith('image/');
+                    const isPdf = file.mimetype === 'application/pdf';
+                    const canPreview = isImage || isPdf;
+
                     return (
                       <div
                         key={file.filename}
@@ -296,13 +385,20 @@ export default function ClientDetail() {
                         style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
                       >
                         <div className="flex items-center gap-4 min-w-0">
+
+                          {/* Thumbnail */}
                           {isImage ? (
-                            <img
-                              src={file.url}
-                              alt={file.originalName}
-                              className="w-12 h-12 rounded-lg object-cover shrink-0"
-                              style={{ border: `1px solid ${c.border}` }}
-                            />
+                            <button
+                              onClick={() => setPreviewFile({ ...file, type: 'image' })}
+                              className="shrink-0"
+                            >
+                              <img
+                                src={file.url}
+                                alt={file.originalName}
+                                className="w-12 h-12 rounded-lg object-cover transition hover:opacity-80"
+                                style={{ border: `1px solid ${c.border}` }}
+                              />
+                            </button>
                           ) : (
                             <div
                               className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
@@ -318,6 +414,8 @@ export default function ClientDetail() {
                               </svg>
                             </div>
                           )}
+
+                          {/* File info */}
                           <div className="min-w-0">
                             <p
                               className="text-sm font-medium"
@@ -330,20 +428,32 @@ export default function ClientDetail() {
                             </p>
                           </div>
                         </div>
-                        <a
-                          href={file.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download={file.originalName}
-                          className="text-xs px-3 py-1.5 rounded-lg transition shrink-0"
-                          style={{
-                            backgroundColor: c.accentBg,
-                            color: c.accentText,
-                            border: `1px solid ${c.accentBorder}`,
-                          }}
-                        >
-                          Download
-                        </a>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 shrink-0">
+                          {canPreview && (
+                            <button
+                              onClick={() => setPreviewFile({
+                                ...file,
+                                type: isImage ? 'image' : 'pdf',
+                              })}
+                              className="text-xs px-3 py-1.5 rounded-lg transition"
+                              style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
+                            >
+                              {isImage ? 'View' : 'Preview'}
+                            </button>
+                          )}
+                          <a
+                            href={file.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download={file.originalName}
+                            className="text-xs px-3 py-1.5 rounded-lg transition"
+                            style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}
+                          >
+                            Download
+                          </a>
+                        </div>
                       </div>
                     );
                   })}
