@@ -133,16 +133,21 @@ export default function ClientPortal() {
         <div className="flex flex-1 items-center justify-center px-6 py-16">
           <div className="w-full max-w-lg flex flex-col gap-8">
 
-            <div>
+            <div className="flex flex-col gap-4">
+              {selectedTemplate.introImageUrl && (
+                <img
+                  src={selectedTemplate.introImageUrl}
+                  alt="Form intro"
+                  className="w-full rounded-xl object-cover max-h-56"
+                  style={{ border: `1px solid ${c.border}` }}
+                />
+              )}
               <h1
-                className="text-5xl mb-3"
+                className="text-5xl"
                 style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
               >
-                What can we help you with?
+                {selectedTemplate.title}
               </h1>
-              <p className="text-sm leading-relaxed" style={{ color: c.textSecondary }}>
-                Select the service you need and we'll guide you through a quick intake form.
-              </p>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -171,134 +176,93 @@ export default function ClientPortal() {
 
   // ── Intro screen ──────────────────────────────────────────
   if (stage === 'intro') {
-    return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
-        <Navbar />
-        <div className="flex flex-1 items-center justify-center px-6 py-16">
-          <div className="w-full max-w-lg flex flex-col gap-8">
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
+      <Navbar />
+      <div className="flex flex-1 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-lg flex flex-col gap-8">
 
+          <div>
+            <h1
+              className="text-5xl mb-3"
+              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
+            >
+              {selectedTemplate.title}
+            </h1>
+          </div>
+
+          <div className="flex flex-col gap-4">
+
+            {/* Privacy note — always shown */}
             <div
-              className="flex items-center gap-3 px-4 py-3 rounded-xl self-start"
-              style={{ backgroundColor: c.accentBg, border: `1px solid ${c.accentBorder}` }}
+              className="flex items-start gap-3 px-5 py-4 rounded-xl"
+              style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
             >
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
                 style={{ backgroundColor: c.accentBg }}
               >
                 <svg className="w-4 h-4" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
               <div>
-                <p className="text-xs font-medium" style={{ color: c.accentText }}>
-                  You have been invited by a provider
+                <p className="text-sm font-medium" style={{ color: c.textPrimary }}>
+                  Your answers are private
                 </p>
-                <p className="text-xs" style={{ color: c.textMuted }}>
-                  Portal: {portalLink}
+                <p className="text-xs mt-0.5" style={{ color: c.textMuted }}>
+                  Only your provider can see your submitted brief.
                 </p>
               </div>
             </div>
 
-            <div>
-              <h1
-                className="text-5xl mb-3"
-                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
-              >
-                {selectedTemplate.title}
-              </h1>
-              <p className="text-sm leading-relaxed" style={{ color: c.textSecondary }}>
-                Before we get started, here is a quick overview of what to expect.
-              </p>
-            </div>
-
-            <div
-              className="rounded-xl overflow-hidden"
-              style={{ border: `1px solid ${c.border}` }}
-            >
+            {/* Custom intro note — only shown if set */}
+            {selectedTemplate.introNote && (
               <div
-                className="px-5 py-3"
-                style={{ backgroundColor: c.bgCard, borderBottom: `1px solid ${c.border}` }}
+                className="px-5 py-4 rounded-xl"
+                style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
               >
-                <p className="text-xs font-medium" style={{ color: c.textMuted }}>
-                  WHAT TO EXPECT
+                <p className="text-xs font-medium mb-2" style={{ color: c.textMuted }}>
+                  NOTE FROM YOUR PROVIDER
+                </p>
+                <p className="text-sm leading-relaxed" style={{ color: c.textPrimary, whiteSpace: 'pre-wrap' }}>
+                  {selectedTemplate.introNote}
                 </p>
               </div>
-              {[
-                {
-                  title: `${selectedTemplate.fields.length} questions total`,
-                  description: 'Broken into short steps so it never feels overwhelming.',
-                },
-                {
-                  title: 'Takes about 3 to 5 minutes',
-                  description: 'Most clients finish in under 5 minutes.',
-                },
-                {
-                  title: 'Your answers are private',
-                  description: 'Only your provider can see your submitted brief.',
-                },
-                {
-                  title: 'File uploads supported',
-                  description: 'You can attach logos, reference images, or documents.',
-                },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-4 px-5 py-4"
-                  style={{
-                    borderTop: idx === 0 ? 'none' : `1px solid ${c.border}`,
-                    backgroundColor: idx % 2 === 0 ? c.bgCard : c.bgCardAlt,
-                  }}
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                    style={{ backgroundColor: c.accentBg }}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: c.textPrimary }}>
-                      {item.title}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: c.textMuted }}>
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-xs" style={{ color: c.textMuted }}>
-              Fields marked with{' '}
-              <span style={{ color: c.accentText }}>*</span>
-              {' '}are required.
-            </p>
-
-            <div className="flex gap-3">
-              {templates.length > 1 && (
-                <button
-                  onClick={() => setStage('pick')}
-                  className="px-5 py-3 rounded-lg text-sm transition"
-                  style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
-                >
-                  Back
-                </button>
-              )}
-              <button
-                onClick={() => setStage('form')}
-                className="flex-1 py-3 rounded-lg text-sm font-medium transition"
-                style={{ backgroundColor: c.accent, color: c.accentFg }}
-              >
-                Start filling out the form
-              </button>
-            </div>
+            )}
 
           </div>
+
+          <p className="text-xs" style={{ color: c.textMuted }}>
+            Fields marked with{' '}
+            <span style={{ color: c.accentText }}>*</span>
+            {' '}are required.
+          </p>
+
+          <div className="flex gap-3">
+            {templates.length > 1 && (
+              <button
+                onClick={() => setStage('pick')}
+                className="px-5 py-3 rounded-lg text-sm transition"
+                style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
+              >
+                Back
+              </button>
+            )}
+            <button
+              onClick={() => setStage('form')}
+              className="flex-1 py-3 rounded-lg text-sm font-medium transition"
+              style={{ backgroundColor: c.accent, color: c.accentFg }}
+            >
+              Start filling out the form
+            </button>
+          </div>
+
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // ── Submitted screen ──────────────────────────────────────
   if (submitted) {
@@ -398,12 +362,45 @@ export default function ClientPortal() {
           <div className="flex flex-col gap-5">
             {currentFields.map((field) => (
               <div key={field.id} className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium" style={{ color: c.textSecondary }}>
-                  {field.label}
-                  {field.required && (
-                    <span style={{ color: c.accentText }} className="ml-1">*</span>
-                  )}
-                </label>
+                <div className="flex flex-col gap-1">
+  <label className="text-sm font-medium" style={{ color: c.textSecondary }}>
+    {field.label}
+    {field.required && (
+      <span style={{ color: c.accentText }} className="ml-1">*</span>
+    )}
+  </label>
+  {field.helperText && (
+    <p className="text-xs leading-relaxed" style={{ color: c.textMuted }}>
+      {field.helperText}
+    </p>
+  )}
+  {field.attachmentUrl && (
+  <div className="flex flex-col gap-2">
+    {field.attachmentMimetype?.startsWith('image/') ? (
+      <img
+        src={field.attachmentUrl}
+        alt={field.attachmentName || 'Attachment'}
+        className="w-full rounded-xl object-cover max-h-48"
+        style={{ border: `1px solid ${c.border}` }}
+      />
+    ) : (
+      <a
+        href={field.attachmentUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        download={field.attachmentName}
+        className="text-xs inline-flex items-center gap-1 self-start px-2.5 py-1 rounded-lg transition"
+        style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}
+      >
+        <svg className="w-3 h-3" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+        </svg>
+        {field.attachmentName || 'View attachment'}
+      </a>
+    )}
+  </div>
+)}
+</div>
 
                 {field.type === 'file' ? (
                   <div>

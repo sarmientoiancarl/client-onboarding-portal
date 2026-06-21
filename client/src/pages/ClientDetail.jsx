@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import ClientModal from '../components/ClientModal';
 import { exportClientPDF } from '../utils/exportPdf';
-import { getClients, getSubmissionByClientId, getFormTemplate, updateClient, deleteClient } from '../services/api';
+import { getClients, getSubmissionByClientId, getFormTemplate, getFormTemplateById, updateClient, deleteClient } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { t } from '../utils/theme';
 
@@ -28,13 +28,21 @@ export default function ClientDetail() {
 
     const fetchData = async () => {
       try {
-        const [clients, sub, tmpl] = await Promise.all([
+        const [clients, sub] = await Promise.all([
           getClients(),
           getSubmissionByClientId(clientId),
-          getFormTemplate(),
         ]);
         const found = clients.find((cl) => cl.id === clientId);
         if (!found) { navigate('/dashboard'); return; }
+
+        // Fetch the correct template based on what the client actually submitted
+        let tmpl = null;
+        if (sub && sub.templateId) {
+          tmpl = await getFormTemplateById(sub.templateId);
+        } else {
+          tmpl = await getFormTemplate();
+        }
+
         setClient(found);
         setSubmission(sub);
         setTemplate(tmpl);

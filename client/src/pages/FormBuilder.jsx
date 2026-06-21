@@ -15,7 +15,17 @@ const FIELD_TYPES = [
 ];
 
 const generateId = () => `field-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-const emptyField = () => ({ id: generateId(), type: 'text', label: '', placeholder: '', required: false, options: [] });
+const emptyField = () => ({
+  id: generateId(),
+  type: 'text',
+  label: '',
+  placeholder: '',
+  required: false,
+  options: [],
+  helperText: '',
+  attachmentUrl: '',
+  attachmentName: '',
+});
 
 export default function FormBuilder() {
   const navigate = useNavigate();
@@ -23,7 +33,11 @@ export default function FormBuilder() {
   const { theme } = useTheme();
   const c = t(theme);
   const [title, setTitle] = useState('');
+  const [introNote, setIntroNote] = useState('');
+  const [savedIntroImageUrl, setSavedIntroImageUrl] = useState('');
   const [fields, setFields] = useState([]);
+  const [attachments, setAttachments] = useState({});
+  const [introImage, setIntroImage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -38,7 +52,9 @@ export default function FormBuilder() {
     const fetchForm = async () => {
       try {
         const data = await getFormTemplateById(templateId);
+        setSavedIntroImageUrl(data.introImageUrl || '');
         setTitle(data.title || 'Client Intake Form');
+        setIntroNote(data.introNote || '');
         setFields(data.fields || []);
       } catch (err) {
         console.error('Failed to load form:', err);
@@ -98,6 +114,20 @@ export default function FormBuilder() {
     );
   };
 
+  const handleAttachmentChange = (fieldId, file) => {
+    setAttachments((prev) => ({ ...prev, [fieldId]: file }));
+  };
+
+  const removeAttachment = (fieldId) => {
+    setAttachments((prev) => {
+      const updated = { ...prev };
+      delete updated[fieldId];
+      return updated;
+    });
+    updateField(fieldId, 'attachmentUrl', '');
+    updateField(fieldId, 'attachmentName', '');
+  };
+
   const handleSave = async () => {
     for (const field of fields) {
       if (!field.label.trim()) { setError('All fields must have a label.'); return; }
@@ -108,8 +138,10 @@ export default function FormBuilder() {
     setSaving(true);
     setError('');
     try {
-      await saveFormTemplate(templateId, title, fields);
-      setSaved(true);
+    await saveFormTemplate(templateId, title, introNote, fields, attachments, introImage);
+    setSaved(true);
+    setAttachments({});
+    setIntroImage(null);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       setError('Failed to save. Please try again.');
@@ -146,6 +178,7 @@ export default function FormBuilder() {
 
       <div className="max-w-3xl mx-auto w-full px-6 py-10 flex flex-col gap-8">
 
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <Link
@@ -169,12 +202,13 @@ export default function FormBuilder() {
             onClick={handleSave}
             disabled={saving}
             className="px-5 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50 self-start sm:self-auto"
-            style={{ backgroundColor: saved ? '#1D9E75' : c.accent, color: '#FEFEFE' }}
+            style={{ backgroundColor: saved ? '#1D9E75' : c.accent, color: saved ? '#FEFEFE' : c.accentFg }}
           >
             {saving ? 'Saving...' : saved ? 'Saved' : 'Save form'}
           </button>
         </div>
 
+        {/* Form title */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" style={{ color: c.textSecondary }}>
             Form title
@@ -188,6 +222,67 @@ export default function FormBuilder() {
           />
         </div>
 
+        {/* Intro image */}
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium" style={{ color: c.textSecondary }}>
+            Intro image{' '}
+            <span className="text-xs font-normal ml-1" style={{ color: c.textFaint }}>
+              optional — shown to client on the intro screen
+            </span>
+          </label>
+
+          {savedIntroImageUrl && !introImage && (
+            <div className="flex flex-col gap-2">
+              <img
+                src={savedIntroImageUrl}
+                alt="Current intro"
+                className="w-full rounded-xl object-cover max-h-48"
+                style={{ border: `1px solid ${c.border}` }}
+              />
+              <p className="text-xs" style={{ color: c.textMuted }}>
+                Current intro image. Upload a new one to replace it.
+              </p>
+            </div>
+          )}
+
+          {introImage ? (
+            <div
+              className="flex items-center justify-between rounded-lg px-4 py-3"
+              style={{ backgroundColor: c.accentBg, border: `1px solid ${c.accentBorder}` }}
+            >
+              <p className="text-xs" style={{ color: c.accentText }}>{introImage.name}</p>
+              <button
+                onClick={() => setIntroImage(null)}
+                className="text-xs ml-2"
+                style={{ color: c.deleteText }}
+              >
+                remove
+              </button>
+            </div>
+          ) : (
+            <label
+              htmlFor="intro-image-upload"
+              className="flex items-center gap-2 rounded-lg px-4 py-3 cursor-pointer transition"
+              style={{ border: `1px dashed ${c.borderMid}`, color: c.textMuted }}
+            >
+              <svg className="w-4 h-4" fill="none" stroke={c.textMuted} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="text-xs">
+                Upload intro image (JPG, PNG, WebP)
+              </span>
+            </label>
+          )}
+          <input
+            id="intro-image-upload"
+            type="file"
+            accept=".jpg,.jpeg,.png,.webp"
+            onChange={(e) => setIntroImage(e.target.files[0])}
+            className="hidden"
+          />
+        </div>
+
+        {/* Fields */}
         <div className="flex flex-col gap-3">
           <p className="text-sm font-medium" style={{ color: c.textSecondary }}>
             Fields{' '}
@@ -213,6 +308,7 @@ export default function FormBuilder() {
               className="rounded-xl overflow-hidden"
               style={{ border: `1px solid ${c.border}`, backgroundColor: c.bgCard }}
             >
+              {/* Field header */}
               <div
                 className="flex items-center justify-between px-5 py-4 cursor-pointer"
                 onClick={() => setExpandedField(expandedField === field.id ? null : field.id)}
@@ -229,6 +325,16 @@ export default function FormBuilder() {
                   </span>
                   {field.required && (
                     <span className="text-xs" style={{ color: c.accentText }}>*</span>
+                  )}
+                  {field.helperText && (
+                    <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: c.bgCardAlt, color: c.textMuted }}>
+                      note
+                    </span>
+                  )}
+                  {(field.attachmentUrl || attachments[field.id]) && (
+                    <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: c.bgCardAlt, color: c.textMuted }}>
+                      file
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -256,12 +362,15 @@ export default function FormBuilder() {
                 </div>
               </div>
 
+              {/* Field editor */}
               {expandedField === field.id && (
                 <div
                   className="px-5 pb-5 flex flex-col gap-4"
                   style={{ borderTop: `1px solid ${c.border}` }}
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+
+                    {/* Label */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium" style={{ color: c.textSecondary }}>Label</label>
                       <input
@@ -273,6 +382,7 @@ export default function FormBuilder() {
                       />
                     </div>
 
+                    {/* Field type */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium" style={{ color: c.textSecondary }}>Field type</label>
                       <select
@@ -286,6 +396,7 @@ export default function FormBuilder() {
                       </select>
                     </div>
 
+                    {/* Placeholder */}
                     {field.type !== 'select' && field.type !== 'file' && (
                       <div className="flex flex-col gap-1.5 sm:col-span-2">
                         <label className="text-xs font-medium" style={{ color: c.textSecondary }}>Placeholder text</label>
@@ -299,6 +410,7 @@ export default function FormBuilder() {
                       </div>
                     )}
 
+                    {/* Required toggle */}
                     <div className="flex items-center gap-3 sm:col-span-2">
                       <button
                         onClick={() => updateField(field.id, 'required', !field.required)}
@@ -317,6 +429,7 @@ export default function FormBuilder() {
                     </div>
                   </div>
 
+                  {/* Dropdown options */}
                   {field.type === 'select' && (
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-medium" style={{ color: c.textSecondary }}>Options</label>
@@ -347,6 +460,104 @@ export default function FormBuilder() {
                       </button>
                     </div>
                   )}
+
+                  {/* Divider */}
+                  <div style={{ borderTop: `1px solid ${c.border}` }} />
+
+                  {/* Helper text */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium" style={{ color: c.textSecondary }}>
+                      Helper note{' '}
+                      <span className="font-normal" style={{ color: c.textFaint }}>
+                        — shown below the field label to guide the client
+                      </span>
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={field.helperText || ''}
+                      onChange={(e) => updateField(field.id, 'helperText', e.target.value)}
+                      placeholder="e.g. Please use your legal name as it appears on your ID."
+                      style={{ ...inputStyle, resize: 'none' }}
+                    />
+                  </div>
+
+                  {/* Field attachment */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium" style={{ color: c.textSecondary }}>
+                      Field attachment{' '}
+                      <span className="font-normal" style={{ color: c.textFaint }}>
+                        — optional file the client can view or download
+                      </span>
+                    </label>
+
+                    {/* Show existing attachment */}
+                    {field.attachmentUrl && !attachments[field.id] && (
+                      <div
+                        className="flex items-center justify-between rounded-lg px-4 py-3"
+                        style={{ backgroundColor: c.bgCardAlt, border: `1px solid ${c.border}` }}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <svg className="w-4 h-4 shrink-0" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                          </svg>
+                          <p className="text-xs truncate" style={{ color: c.textSecondary }}>
+                            {field.attachmentName || 'Attached file'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => removeAttachment(field.id)}
+                          className="text-xs ml-2 shrink-0"
+                          style={{ color: c.deleteText }}
+                        >
+                          remove
+                        </button>
+                      </div>
+                    )}
+
+                    {/* New attachment upload */}
+                    {attachments[field.id] ? (
+                      <div
+                        className="flex items-center justify-between rounded-lg px-4 py-3"
+                        style={{ backgroundColor: c.accentBg, border: `1px solid ${c.accentBorder}` }}
+                      >
+                        <p className="text-xs" style={{ color: c.accentText }}>
+                          {attachments[field.id].name}
+                        </p>
+                        <button
+                          onClick={() => setAttachments((prev) => {
+                            const updated = { ...prev };
+                            delete updated[field.id];
+                            return updated;
+                          })}
+                          className="text-xs ml-2"
+                          style={{ color: c.deleteText }}
+                        >
+                          remove
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor={`attachment-${field.id}`}
+                        className="flex items-center gap-2 rounded-lg px-4 py-3 cursor-pointer transition"
+                        style={{ border: `1px dashed ${c.borderMid}`, color: c.textMuted }}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke={c.textMuted} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span className="text-xs">
+                          {field.attachmentUrl ? 'Replace attachment' : 'Upload attachment'}
+                        </span>
+                      </label>
+                    )}
+                    <input
+                      id={`attachment-${field.id}`}
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.pdf,.docx"
+                      onChange={(e) => handleAttachmentChange(field.id, e.target.files[0])}
+                      className="hidden"
+                    />
+                  </div>
+
                 </div>
               )}
             </div>
@@ -361,6 +572,7 @@ export default function FormBuilder() {
           </button>
         </div>
 
+        {/* Error */}
         {error && (
           <div
             className="rounded-lg px-4 py-3"
@@ -370,6 +582,7 @@ export default function FormBuilder() {
           </div>
         )}
 
+        {/* Preview note */}
         <div
           className="rounded-xl px-6 py-4 flex items-center justify-between"
           style={{ backgroundColor: c.accentBg, border: `1px solid ${c.accentBorder}` }}

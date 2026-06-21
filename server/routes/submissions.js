@@ -4,6 +4,17 @@ const authMiddleware = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const Submission = require('../models/Submission');
 const Provider = require('../models/Provider');
+const FormTemplate = require('../models/FormTemplate');
+
+// Helper — find a field value by matching common label names
+const findFieldValue = (answers, fields, keywords) => {
+  if (!fields || !answers) return '';
+  const match = fields.find((f) =>
+    keywords.some((kw) => f.label.toLowerCase().includes(kw.toLowerCase()))
+  );
+  if (!match) return '';
+  return answers[match.id] || '';
+};
 
 // Submit a brief (public — for clients)
 router.post('/', upload.any(), async (req, res) => {
@@ -15,6 +26,30 @@ router.post('/', upload.any(), async (req, res) => {
     if (!provider) {
       return res.status(404).json({ message: 'Portal not found' });
     }
+
+    // Load the form template to find name/email/business fields dynamically
+    let templateFields = [];
+    if (templateId) {
+      const tmpl = await FormTemplate.findById(templateId);
+      if (tmpl) templateFields = tmpl.fields;
+    } else {
+      const tmpl = await FormTemplate.findOne({ providerId: provider._id });
+      if (tmpl) templateFields = tmpl.fields;
+    }
+
+    // Try to find name, email, business by matching field labels
+    const clientName =
+      findFieldValue(parsedAnswers, templateFields, ['full name', 'name']) ||
+      Object.values(parsedAnswers)[0] ||
+      'Unknown';
+
+    const clientEmail =
+      findFieldValue(parsedAnswers, templateFields, ['email']) ||
+      'Unknown';
+
+    const clientBusiness =
+      findFieldValue(parsedAnswers, templateFields, ['business', 'company', 'organization']) ||
+      '';
 
     const files = (req.files || []).map((file) => ({
       fieldId: file.fieldname,
@@ -29,9 +64,9 @@ router.post('/', upload.any(), async (req, res) => {
       providerId: provider._id,
       portalLink,
       templateId: templateId || null,
-      clientName: parsedAnswers['field-001'] || 'Unknown',
-      clientEmail: parsedAnswers['field-003'] || 'Unknown',
-      clientBusiness: parsedAnswers['field-002'] || '',
+      clientName,
+      clientEmail,
+      clientBusiness,
       answers: parsedAnswers,
       files,
       status: 'completed',

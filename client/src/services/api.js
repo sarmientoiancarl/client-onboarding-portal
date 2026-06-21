@@ -139,12 +139,26 @@ export const createFormTemplate = async (title) => {
   return res.json();
 };
 
-export const saveFormTemplate = async (templateId, title, fields) => {
+export const saveFormTemplate = async (templateId, title, introNote, fields, attachments = {}, introImage = null) => {
   if (DEMO_MODE) { await delay(500); return { success: true }; }
+
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('introNote', introNote || '');
+  formData.append('fields', JSON.stringify(fields));
+
+  if (introImage) {
+    formData.append('introImage', introImage);
+  }
+
+  Object.entries(attachments).forEach(([fieldId, file]) => {
+    if (file) formData.append(fieldId, file);
+  });
+
   const res = await fetch(`${BASE_URL}/forms/${templateId}`, {
     method: 'PATCH',
-    headers: authHeaders(),
-    body: JSON.stringify({ title, fields }),
+    headers: { Authorization: `Bearer ${getToken()}` },
+    body: formData,
   });
   return res.json();
 };

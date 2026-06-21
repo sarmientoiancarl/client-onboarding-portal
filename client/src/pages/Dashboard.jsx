@@ -273,7 +273,14 @@ export default function Dashboard() {
                     <StatusBadge status={client.status} />
                   </div>
                   <span className="text-sm" style={{ color: c.textSecondary }}>{client.business}</span>
-                  <span className="text-xs" style={{ color: c.textMuted }}>{client.email}</span>
+                  {client.formTitle && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full self-start"
+                      style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}
+                    >
+                      {client.formTitle}
+                    </span>
+                  )}
                 </Link>
 
                 <div className="flex items-center gap-4">

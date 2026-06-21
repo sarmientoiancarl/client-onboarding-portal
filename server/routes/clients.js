@@ -10,7 +10,9 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     const submissions = await Submission.find({
       providerId: req.providerId,
-    }).sort({ createdAt: -1 });
+    })
+      .sort({ createdAt: -1 })
+      .populate('templateId', 'title');
 
     const clients = submissions.map((s) => ({
       id: s._id,
@@ -20,6 +22,7 @@ router.get('/', authMiddleware, async (req, res) => {
       status: s.status,
       submittedAt: s.createdAt,
       portalLink: s.portalLink,
+      formTitle: s.templateId?.title || null,
     }));
 
     res.json(clients);
