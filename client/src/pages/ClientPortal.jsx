@@ -19,6 +19,8 @@ export default function ClientPortal() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [introImageFullscreen, setIntroImageFullscreen] = useState(false);
+  const [fieldImageFullscreen, setFieldImageFullscreen] = useState(null);
 
   const STEPS_PER_PAGE = 3;
 
@@ -114,6 +116,7 @@ export default function ClientPortal() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  // ── Loading ───────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
@@ -132,24 +135,17 @@ export default function ClientPortal() {
         <Navbar />
         <div className="flex flex-1 items-center justify-center px-6 py-16">
           <div className="w-full max-w-lg flex flex-col gap-8">
-
-            <div className="flex flex-col gap-4">
-              {selectedTemplate.introImageUrl && (
-                <img
-                  src={selectedTemplate.introImageUrl}
-                  alt="Form intro"
-                  className="w-full rounded-xl object-cover max-h-56"
-                  style={{ border: `1px solid ${c.border}` }}
-                />
-              )}
+            <div>
               <h1
-                className="text-5xl"
+                className="text-5xl mb-3"
                 style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
               >
-                {selectedTemplate.title}
+                What can we help you with?
               </h1>
+              <p className="text-sm leading-relaxed" style={{ color: c.textSecondary }}>
+                Select the service you need and we'll guide you through a quick intake form.
+              </p>
             </div>
-
             <div className="flex flex-col gap-3">
               {templates.map((tmpl) => (
                 <button
@@ -167,7 +163,6 @@ export default function ClientPortal() {
                 </button>
               ))}
             </div>
-
           </div>
         </div>
       </div>
@@ -176,93 +171,169 @@ export default function ClientPortal() {
 
   // ── Intro screen ──────────────────────────────────────────
   if (stage === 'intro') {
-  return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
-      <Navbar />
-      <div className="flex flex-1 items-center justify-center px-6 py-16">
-        <div className="w-full max-w-lg flex flex-col gap-8">
+    if (!selectedTemplate) return null;
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
+        <Navbar />
+        <div className="flex flex-1 items-center justify-center px-6 py-16">
+          <div className="w-full max-w-lg flex flex-col gap-8">
 
-          <div>
-            <h1
-              className="text-5xl mb-3"
-              style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
-            >
-              {selectedTemplate.title}
-            </h1>
-          </div>
-
-          <div className="flex flex-col gap-4">
-
-            {/* Privacy note — always shown */}
-            <div
-              className="flex items-start gap-3 px-5 py-4 rounded-xl"
-              style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
-            >
+            {/* Field image fullscreen overlay */}
+            {fieldImageFullscreen && (
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                style={{ backgroundColor: c.accentBg }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                style={{ backgroundColor: '#0F0F0FF5' }}
+                onClick={() => setFieldImageFullscreen(null)}
               >
-                <svg className="w-4 h-4" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+                <div
+                  className="relative w-full max-w-4xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => setFieldImageFullscreen(null)}
+                    className="absolute top-3 right-3 z-10 text-xs px-3 py-1.5 rounded-lg transition"
+                    style={{ backgroundColor: '#0F0F0F99', color: '#FEFEFE', border: '1px solid #FEFEFE22' }}
+                  >
+                    Exit fullscreen
+                  </button>
+                  <img
+                    src={fieldImageFullscreen.url}
+                    alt={fieldImageFullscreen.name || 'Attachment'}
+                    className="w-full rounded-xl object-contain max-h-screen"
+                    style={{ border: '1px solid #FEFEFE11' }}
+                  />
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium" style={{ color: c.textPrimary }}>
-                  Your answers are private
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: c.textMuted }}>
-                  Only your provider can see your submitted brief.
-                </p>
+            )}
+
+            {/* Fullscreen image overlay */}
+            {introImageFullscreen && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                style={{ backgroundColor: '#0F0F0FF5' }}
+                onClick={() => setIntroImageFullscreen(false)}
+              >
+                <div
+                  className="relative w-full max-w-4xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => setIntroImageFullscreen(false)}
+                    className="absolute top-3 right-3 z-10 text-xs px-3 py-1.5 rounded-lg transition"
+                    style={{ backgroundColor: '#0F0F0F99', color: '#FEFEFE', border: '1px solid #FEFEFE22' }}
+                  >
+                    Exit fullscreen
+                  </button>
+                  <img
+                    src={selectedTemplate.introImageUrl}
+                    alt="Form intro fullscreen"
+                    className="w-full rounded-xl object-contain max-h-screen"
+                    style={{ border: `1px solid #FEFEFE11` }}
+                  />
+                </div>
               </div>
+            )}
+
+            {/* Title + optional intro image */}
+            <div className="flex flex-col gap-4">
+              {selectedTemplate.introImageUrl && (
+                <div className="relative">
+                  <img
+                    src={selectedTemplate.introImageUrl}
+                    alt="Form intro"
+                    className="w-full rounded-xl object-contain cursor-pointer transition hover:opacity-90"
+                    style={{ border: `1px solid ${c.border}`, maxHeight: '70vh' }}
+                    onClick={() => setIntroImageFullscreen(true)}
+                  />
+                  <button
+                    onClick={() => setIntroImageFullscreen(true)}
+                    className="absolute bottom-3 right-3 text-xs px-3 py-1.5 rounded-lg transition"
+                    style={{ backgroundColor: '#0F0F0F99', color: '#FEFEFE', border: '1px solid #FEFEFE22' }}
+                  >
+                    View fullscreen
+                  </button>
+                </div>
+              )}
+              <h1
+                className="text-5xl"
+                style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
+              >
+                {selectedTemplate.title}
+              </h1>
             </div>
 
-            {/* Custom intro note — only shown if set */}
-            {selectedTemplate.introNote && (
+            <div className="flex flex-col gap-4">
+
+              {/* Privacy note — always shown */}
               <div
-                className="px-5 py-4 rounded-xl"
+                className="flex items-start gap-3 px-5 py-4 rounded-xl"
                 style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
               >
-                <p className="text-xs font-medium mb-2" style={{ color: c.textMuted }}>
-                  NOTE FROM YOUR PROVIDER
-                </p>
-                <p className="text-sm leading-relaxed" style={{ color: c.textPrimary, whiteSpace: 'pre-wrap' }}>
-                  {selectedTemplate.introNote}
-                </p>
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                  style={{ backgroundColor: c.accentBg }}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: c.textPrimary }}>
+                    Your answers are private
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: c.textMuted }}>
+                    Only your provider can see your submitted brief.
+                  </p>
+                </div>
               </div>
-            )}
 
-          </div>
+              {/* Custom intro note — only shown if set */}
+              {selectedTemplate.introNote && (
+                <div
+                  className="px-5 py-4 rounded-xl"
+                  style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
+                >
+                  <p className="text-xs font-medium mb-2" style={{ color: c.textMuted }}>
+                    NOTE FROM YOUR PROVIDER
+                  </p>
+                  <p className="text-sm leading-relaxed" style={{ color: c.textPrimary, whiteSpace: 'pre-wrap' }}>
+                    {selectedTemplate.introNote}
+                  </p>
+                </div>
+              )}
 
-          <p className="text-xs" style={{ color: c.textMuted }}>
-            Fields marked with{' '}
-            <span style={{ color: c.accentText }}>*</span>
-            {' '}are required.
-          </p>
+            </div>
 
-          <div className="flex gap-3">
-            {templates.length > 1 && (
+            <p className="text-xs" style={{ color: c.textMuted }}>
+              Fields marked with{' '}
+              <span style={{ color: c.accentText }}>*</span>
+              {' '}are required.
+            </p>
+
+            <div className="flex gap-3">
+              {templates.length > 1 && (
+                <button
+                  onClick={() => setStage('pick')}
+                  className="px-5 py-3 rounded-lg text-sm transition"
+                  style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
+                >
+                  Back
+                </button>
+              )}
               <button
-                onClick={() => setStage('pick')}
-                className="px-5 py-3 rounded-lg text-sm transition"
-                style={{ border: `1px solid ${c.borderMid}`, color: c.textSecondary }}
+                onClick={() => setStage('form')}
+                className="flex-1 py-3 rounded-lg text-sm font-medium transition"
+                style={{ backgroundColor: c.accent, color: c.accentFg }}
               >
-                Back
+                Start filling out the form
               </button>
-            )}
-            <button
-              onClick={() => setStage('form')}
-              className="flex-1 py-3 rounded-lg text-sm font-medium transition"
-              style={{ backgroundColor: c.accent, color: c.accentFg }}
-            >
-              Start filling out the form
-            </button>
-          </div>
+            </div>
 
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   // ── Submitted screen ──────────────────────────────────────
   if (submitted) {
@@ -324,6 +395,8 @@ export default function ClientPortal() {
   }
 
   // ── Form screen ───────────────────────────────────────────
+  if (!selectedTemplate) return null;
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
       <Navbar />
@@ -346,6 +419,7 @@ export default function ClientPortal() {
             </p>
           </div>
 
+          {/* Progress bar */}
           <div className="flex flex-col gap-2">
             <div className="flex justify-between text-xs" style={{ color: c.textMuted }}>
               <span>Step {step + 1} of {totalSteps}</span>
@@ -359,49 +433,53 @@ export default function ClientPortal() {
             </div>
           </div>
 
+          {/* Fields */}
           <div className="flex flex-col gap-5">
             {currentFields.map((field) => (
               <div key={field.id} className="flex flex-col gap-1.5">
-                <div className="flex flex-col gap-1">
-  <label className="text-sm font-medium" style={{ color: c.textSecondary }}>
-    {field.label}
-    {field.required && (
-      <span style={{ color: c.accentText }} className="ml-1">*</span>
-    )}
-  </label>
-  {field.helperText && (
-    <p className="text-xs leading-relaxed" style={{ color: c.textMuted }}>
-      {field.helperText}
-    </p>
-  )}
-  {field.attachmentUrl && (
-  <div className="flex flex-col gap-2">
-    {field.attachmentMimetype?.startsWith('image/') ? (
-      <img
-        src={field.attachmentUrl}
-        alt={field.attachmentName || 'Attachment'}
-        className="w-full rounded-xl object-cover max-h-48"
-        style={{ border: `1px solid ${c.border}` }}
-      />
-    ) : (
-      <a
-        href={field.attachmentUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        download={field.attachmentName}
-        className="text-xs inline-flex items-center gap-1 self-start px-2.5 py-1 rounded-lg transition"
-        style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}
-      >
-        <svg className="w-3 h-3" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-        </svg>
-        {field.attachmentName || 'View attachment'}
-      </a>
-    )}
-  </div>
-)}
-</div>
 
+                {/* Label + helper text + attachment */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium" style={{ color: c.textSecondary }}>
+                    {field.label}
+                    {field.required && (
+                      <span style={{ color: c.accentText }} className="ml-1">*</span>
+                    )}
+                  </label>
+                  {field.helperText && (
+                    <p className="text-xs leading-relaxed" style={{ color: c.textMuted }}>
+                      {field.helperText}
+                    </p>
+                  )}
+                  {field.attachmentUrl && (
+                    <div className="flex flex-col gap-2 mt-1">
+                      {field.attachmentMimetype?.startsWith('image/') ? (
+                        <img
+                        src={field.attachmentUrl}
+                        alt={field.attachmentName || 'Attachment'}
+                        className="w-full rounded-xl object-contain"
+                        style={{ border: `1px solid ${c.border}`, maxHeight: '60vh' }}
+                      />
+                      ) : (
+                        <a
+                          href={field.attachmentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download={field.attachmentName}
+                          className="text-xs inline-flex items-center gap-1 self-start px-2.5 py-1 rounded-lg transition"
+                          style={{ backgroundColor: c.accentBg, color: c.accentText, border: `1px solid ${c.accentBorder}` }}
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke={c.accentText} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                          </svg>
+                          {field.attachmentName || 'View attachment'}
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Field input */}
                 {field.type === 'file' ? (
                   <div>
                     <label
@@ -477,6 +555,7 @@ export default function ClientPortal() {
             ))}
           </div>
 
+          {/* Error */}
           {error && (
             <div
               className="rounded-lg px-4 py-3"
@@ -486,6 +565,7 @@ export default function ClientPortal() {
             </div>
           )}
 
+          {/* Navigation */}
           <div className="flex justify-between gap-3">
             <button
               onClick={step === 0 ? () => setStage('intro') : handleBack}
