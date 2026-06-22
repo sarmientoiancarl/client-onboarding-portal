@@ -12,7 +12,7 @@ export default function Dashboard() {
   const { theme } = useTheme();
   const c = t(theme);
   const [provider] = useState(() => {
-    const stored = localStorage.getItem('provider');
+    const stored = localStorage.getItem('provider') || sessionStorage.getItem('provider');
     return stored ? JSON.parse(stored) : null;
   });
   const [clients, setClients] = useState([]);
@@ -169,7 +169,7 @@ export default function Dashboard() {
           <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => {
-                const stored = localStorage.getItem('provider');
+                const stored = localStorage.getItem('provider') || sessionStorage.getItem('provider');
                 const portalLink = stored ? JSON.parse(stored).portalLink : null;
                 if (!portalLink) { alert('No portal link found. Please log in again.'); return; }
                 navigator.clipboard.writeText(

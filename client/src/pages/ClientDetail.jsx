@@ -23,7 +23,7 @@ export default function ClientDetail() {
   const [previewFile, setPreviewFile] = useState(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('provider');
+    const stored = localStorage.getItem('provider') || sessionStorage.getItem('provider');
     if (!stored) { navigate('/login'); return; }
 
     const fetchData = async () => {

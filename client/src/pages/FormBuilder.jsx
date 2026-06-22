@@ -45,7 +45,7 @@ export default function FormBuilder() {
   const [expandedField, setExpandedField] = useState(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('provider');
+    const stored = localStorage.getItem('provider') || sessionStorage.getItem('provider');
     if (!stored) { navigate('/login'); return; }
     if (!templateId) { navigate('/templates'); return; }
 
