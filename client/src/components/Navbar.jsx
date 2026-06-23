@@ -1,166 +1,83 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { loginProvider } from '../services/api';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { t } from '../utils/theme';
 
-export default function ProviderLogin() {
+export default function Navbar({ isProvider }) {
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const c = t(theme);
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setError('');
-  };
+  let loggedIn = false;
+  try {
+    const stored = localStorage.getItem('provider') || sessionStorage.getItem('provider');
+    loggedIn = isProvider || !!stored;
+  } catch (e) {
+    loggedIn = isProvider || false;
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      const res = await loginProvider(form.email, form.password);
-      if (res.success) {
-        const providerData = JSON.stringify({
-          name: res.name,
-          token: res.token,
-          portalLink: res.portalLink,
-        });
-
-        if (rememberMe) {
-          // Persists across browser sessions
-          localStorage.setItem('provider', providerData);
-        } else {
-          // Clears when browser tab/window is closed
-          sessionStorage.setItem('provider', providerData);
-          localStorage.removeItem('provider');
-        }
-
-        navigate('/dashboard');
-      } else {
-        setError(res.message || 'Invalid credentials. Please try again.');
-      }
-    } catch (err) {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const inputStyle = {
-    backgroundColor: c.bgInput,
-    border: `1px solid ${c.borderMid}`,
-    color: c.textPrimary,
-    borderRadius: '8px',
-    padding: '10px 16px',
-    fontSize: '14px',
-    width: '100%',
-    outline: 'none',
+  const handleLogout = () => {
+    localStorage.removeItem('provider');
+    sessionStorage.removeItem('provider');
+    navigate('/');
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: c.bg }}>
-      <Navbar />
-      <div className="flex flex-1 items-center justify-center px-6 py-16">
-        <div className="w-full max-w-md">
-          <h1
-            className="text-5xl mb-2"
-            style={{ fontFamily: 'Cormorant, serif', fontWeight: 300, color: c.textPrimary }}
-          >
-            Welcome back
-          </h1>
-          <p className="text-sm mb-8" style={{ color: c.textSecondary }}>
-            Sign in to access your dashboard and manage your clients.
-          </p>
+    <nav
+      className="w-full px-6 py-4 flex items-center justify-between"
+      style={{ backgroundColor: c.navBg, borderBottom: `1px solid ${c.navBorder}` }}
+    >
+      <Link
+        to="/"
+        style={{ fontFamily: 'Cormorant, serif', fontSize: '1.25rem', color: c.textPrimary }}
+      >
+        OnboardKit
+      </Link>
 
-          <div
-            className="rounded-lg px-4 py-3 mb-6"
-            style={{ backgroundColor: c.accentBg, border: `1px solid ${c.accentBorder}` }}
-          >
-            <p className="text-xs font-medium mb-1" style={{ color: c.accentText }}>Demo credentials</p>
-            <p className="text-xs" style={{ color: c.textSecondary }}>
-              Email: <span className="font-mono" style={{ color: c.textPrimary }}>demo@provider.com</span>
-            </p>
-            <p className="text-xs" style={{ color: c.textSecondary }}>
-              Password: <span className="font-mono" style={{ color: c.textPrimary }}>demo1234</span>
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {[
-              { label: 'Email address', name: 'email', type: 'email', placeholder: 'you@example.com' },
-              { label: 'Password', name: 'password', type: 'password', placeholder: 'Enter your password' },
-            ].map((field) => (
-              <div key={field.name} className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium" style={{ color: c.textSecondary }}>
-                  {field.label}
-                </label>
-                <input
-                  type={field.type}
-                  name={field.name}
-                  value={form[field.name]}
-                  onChange={handleChange}
-                  placeholder={field.placeholder}
-                  required
-                  style={inputStyle}
-                />
-              </div>
-            ))}
-
-            {/* Remember me */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setRememberMe((prev) => !prev)}
-                className="w-5 h-5 rounded flex items-center justify-center shrink-0 transition"
-                style={{
-                  backgroundColor: rememberMe ? c.accent : c.bgInput,
-                  border: `1px solid ${rememberMe ? c.accent : c.borderMid}`,
-                }}
-              >
-                {rememberMe && (
-                  <svg className="w-3 h-3" fill="none" stroke={c.accentFg} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-              <span className="text-sm" style={{ color: c.textSecondary }}>
-                Remember me
-              </span>
-              <span className="text-xs ml-auto" style={{ color: c.textFaint }}>
-                {rememberMe ? 'Stays logged in across sessions' : 'Logs out when browser closes'}
-              </span>
-            </div>
-
-            {error && (
-              <div className="rounded-lg px-4 py-3" style={{ backgroundColor: c.errorBg, border: `1px solid ${c.errorBorder}` }}>
-                <p className="text-xs" style={{ color: c.errorText }}>{error}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-3 rounded-lg text-sm font-medium transition mt-2 disabled:opacity-50"
-              style={{ backgroundColor: c.accent, color: c.accentFg }}
+      <div className="flex items-center gap-3">
+        {loggedIn ? (
+          <>
+            <Link
+              to="/dashboard"
+              className="text-sm transition"
+              style={{ color: c.textMuted }}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              Dashboard
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="text-sm transition"
+              style={{ color: c.textMuted }}
+            >
+              Log out
             </button>
-          </form>
+          </>
+        ) : (
+          <Link
+            to="/login"
+            className="text-sm px-4 py-2 rounded-lg font-medium transition"
+            style={{ backgroundColor: c.accent, color: c.accentFg }}
+          >
+            Provider login
+          </Link>
+        )}
 
-          <p className="text-center text-xs mt-6" style={{ color: c.textFaint }}>
-            Not a provider?{' '}
-            <Link to="/" style={{ color: c.textSecondary }}>Go back home</Link>
-            {' · '}
-            <Link to="/register" style={{ color: c.textSecondary }}>Create account</Link>
-          </p>
-        </div>
+        <button
+          onClick={toggleTheme}
+          className="w-8 h-8 rounded-lg flex items-center justify-center transition"
+          style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}
+          title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+        >
+          {theme === 'light' ? (
+            <svg className="w-4 h-4" fill="none" stroke={c.textSecondary} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke={c.textSecondary} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+            </svg>
+          )}
+        </button>
       </div>
-    </div>
+    </nav>
   );
 }

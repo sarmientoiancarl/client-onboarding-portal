@@ -19,7 +19,7 @@ export default function TemplateManager() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const stored = localStorage.getItem('provider');
+    const stored = localStorage.getItem('provider') || sessionStorage.getItem('provider');
     if (!stored) { navigate('/login'); return; }
 
     const fetchTemplates = async () => {
